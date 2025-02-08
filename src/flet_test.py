@@ -1,6 +1,5 @@
 import os
 import csv
-import platform
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 from datetime import datetime
@@ -8,12 +7,11 @@ from pathlib import Path
 import flet as ft
 from constants import (
     TVA,
-    COUT_ADMIN,
-    COUT_TRANSPORT,
-    AUTRES_COUTS,
-    COUT_MACHINE,
-    COUT_OPERATEUR,
-    DONNEES_MATERIAUX,
+    TARIF_MACHINE,
+    TARIF_OPERATEUR,
+    FRAIS_FIXES,
+    METAL_PROPERTIES,
+    FORME_COEFFICIENT,
     FICHIER_CLIENTS,
     FICHIER_DEVIS,
 )
@@ -27,9 +25,6 @@ def importimage(path: str) -> Path:
     return filepath
 
 
-# =======================
-# Fonctions utilitaires (CSV, PDF, calculs)
-# =======================
 def lire_csv(chemin_fichier):
     if not os.path.exists(chemin_fichier):
         return []
@@ -46,7 +41,6 @@ def ecrire_csv(chemin_fichier, donnees, en_tetes):
 
 
 def ajouter_csv(chemin_fichier, donnees):
-    # Si le fichier n'existe pas ou est vide, on écrit également les en-têtes
     if not os.path.exists(chemin_fichier) or os.stat(chemin_fichier).st_size == 0:
         if isinstance(donnees, list):
             en_tetes = donnees[0].keys()
@@ -98,7 +92,7 @@ def generer_pdf(devis):
     pdf.cell(0, 5, txt=f"Date : {date_devis}", ln=True, align="L")
     pdf.ln(10)
 
-    # Bloc des coordonnées du client (affiché à droite, au-dessus du numéro de devis)
+    # Bloc des coordonnées du client (affiché à droite)
     clients = lire_csv(FICHIER_CLIENTS)
     client_found = None
     for client in clients:
@@ -106,8 +100,8 @@ def generer_pdf(devis):
             client_found = client
             break
     if client_found is not None:
-        y_client = pdf.get_y()  # position actuelle
-        pdf.set_xy(130, y_client)  # position à droite (x=130)
+        y_client = pdf.get_y()
+        pdf.set_xy(130, y_client)
         pdf.set_font("Arial", "", 12)
         pdf.cell(60, 6, txt=client_found["Nom"], align="R", ln=1)
         pdf.set_x(130)
@@ -129,16 +123,16 @@ def generer_pdf(devis):
     pdf.cell(0, 10, txt=f"Devis n° {numero_devis}", ln=True, align="C")
     pdf.ln(10)
 
-    # Tableau récapitulatif du devis (à gauche)
+    # Tableau récapitulatif du devis
     pdf.set_font("Arial", size=12)
     pdf.set_fill_color(200, 220, 255)
     pdf.cell(50, 10, txt="Champ", border=1, align="C", fill=True)
     pdf.cell(140, 10, txt="Valeur", border=1, align="C", fill=True)
     pdf.ln()
     for key, value in devis.items():
-        if key == "Marge":
+        if key in ["Marge (%)"]:  # la marge n'est plus modifiable
             continue
-        if key == "Remise" and float(value) == 0:
+        if key == "Prix Total" and float(value) == 0:
             continue
         pdf.cell(50, 10, txt=key, border=1)
         pdf.cell(140, 10, txt=str(value), border=1)
@@ -172,40 +166,68 @@ def ajouter_client(nom, adresse, code_postal, telephone):
     )
 
 
-def calculer_temps_decoupe(longueur, vitesse):
-    return (longueur / vitesse) / 60
+# =======================
+# Nouveau calcul de devis
+# =======================
+def calculer_devis(metal, quantite_ml, forme, remise_client):
+    # Marge fixe de 50 %
+    marge = 50 / 100
+    # Conversion de la remise client en décimal (entrée en %)
+    remise_client = remise_client / 100
 
+    # Constantes
 
-def calculer_devis(materiau, longueur, pieces, marge, remise):
-    donnees_materiau = DONNEES_MATERIAUX.get(materiau)
-    if not donnees_materiau:
-        raise ValueError("Matériau non trouvé")
-    cout_materiau = longueur * donnees_materiau["Prix"] * pieces
-    temps_decoupe = calculer_temps_decoupe(longueur, donnees_materiau["Vitesse"])
-    cout_decoupe = temps_decoupe * (COUT_MACHINE + COUT_OPERATEUR)
-    couts_fixes = COUT_ADMIN + (COUT_TRANSPORT * pieces) + (AUTRES_COUTS * pieces)
-    cout_base = cout_materiau + cout_decoupe + couts_fixes
-    prix = (cout_base * (1 + marge)) - remise
-    prix_total = round(prix * (1 + TVA), 3)
+    # Propriétés du métal sélectionné
+    props = METAL_PROPERTIES.get(metal)
+    if not props:
+        raise ValueError("Métal non trouvé")
+    coef_metal = props["coef"]
+    usure_lame = props["usure"]
+    vitesse = props["vitesse"]
+    cout_materiaux_unit = props["cout_materiaux"]
+
+    # Coefficient de la forme de découpe
+    coef_forme = FORME_COEFFICIENT.get(forme)
+    if coef_forme is None:
+        raise ValueError("Forme de découpe non valide")
+
+    # Calcul du temps de découpe (en heures)
+    temps_decoupe = (quantite_ml / vitesse) / 60
+
+    # Coût de découpe
+    cout_decoupe = (
+        temps_decoupe * (TARIF_MACHINE + TARIF_OPERATEUR + usure_lame) * coef_forme
+    )
+
+    # Coût des matériaux (conversion mm -> m)
+    cout_materiaux = (quantite_ml / 1000) * cout_materiaux_unit * coef_metal
+
+    base_cost = cout_materiaux + cout_decoupe + FRAIS_FIXES
+
+    # Application de la marge fixe et de la remise client
+    prix_general = base_cost + (base_cost * marge) - (base_cost * remise_client)
+    prix_total = round(prix_general * (1 + TVA), 3)
+
     return {
-        "Coût Matériau": round(cout_materiau, 3),
+        "Coût Matériaux": round(cout_materiaux, 3),
         "Coût Découpe": round(cout_decoupe, 3),
-        "Coûts Fixes": round(couts_fixes, 3),
-        "Coût Base": round(cout_base, 3),
+        "Frais Fixes": FRAIS_FIXES,
         "Prix Total": prix_total,
     }
 
 
-def ajouter_devis(nom_client, materiau, longueur, pieces, marge, remise):
-    devis = calculer_devis(materiau, longueur, pieces, marge, remise)
+def ajouter_devis(nom_client, metal, quantite_ml, forme, remise_client):
+    devis = calculer_devis(metal, quantite_ml, forme, remise_client)
     donnees_devis = {
         "Nom Client": nom_client.upper(),
-        "Matériau": materiau,
-        "Longueur": longueur,
-        "Pièces": pieces,
-        "Marge": marge,
-        "Remise": remise,
+        "Métal": metal,
+        "Quantité (mm)": quantite_ml,
+        "Forme": forme,
+        "Remise (%)": remise_client,  # valeur saisie par l'utilisateur (en %)
         "Prix Total": devis["Prix Total"],
+        "Coût Matériaux": devis["Coût Matériaux"],
+        "Coût Découpe": devis["Coût Découpe"],
+        "Frais Fixes": devis["Frais Fixes"],
         "Date": datetime.now().strftime("%Y-%m-%d"),
     }
     ajouter_csv(FICHIER_DEVIS, donnees_devis)
@@ -213,10 +235,6 @@ def ajouter_devis(nom_client, materiau, longueur, pieces, marge, remise):
 
 
 def generer_histogramme_image():
-    """
-    Génère l'histogramme des devis par intervalle de prix,
-    l'enregistre dans 'histogram.png' et retourne le chemin du fichier.
-    """
     devis_list = lire_csv(FICHIER_DEVIS)
     try:
         montants = [float(devis["Prix Total"]) for devis in devis_list]
@@ -329,18 +347,30 @@ def main(page: ft.Page):
     # --- Onglet Devis ---
     devis_nom_client = ft.TextField(label="Nom Client", width=300)
     devis_detail_client = ft.Text("", color="blue")
-    materiau_dropdown = ft.Dropdown(
-        label="Matériau",
+    # Dropdown pour sélectionner le métal
+    metal_dropdown = ft.Dropdown(
+        label="Métal",
         options=[
-            ft.dropdown.Option(key=mat, text=mat) for mat in DONNEES_MATERIAUX.keys()
+            ft.dropdown.Option(key=metal, text=metal)
+            for metal in METAL_PROPERTIES.keys()
         ],
-        value=list(DONNEES_MATERIAUX.keys())[0],
+        value=list(METAL_PROPERTIES.keys())[0],
         width=300,
     )
-    devis_longueur = ft.TextField(label="Longueur (mm)", width=300)
-    devis_pieces = ft.TextField(label="Pièces", width=300)
-    devis_marge = ft.TextField(label="Marge (%)", width=300)
-    devis_remise = ft.TextField(label="Remise (€)", width=300)
+    # Champ pour la quantité à découper en mm
+    devis_quantite = ft.TextField(label="Quantité à découper (mm)", width=300)
+    # Dropdown pour la forme de découpe
+    forme_dropdown = ft.Dropdown(
+        label="Forme de découpe",
+        options=[
+            ft.dropdown.Option(key=forme, text=forme)
+            for forme in FORME_COEFFICIENT.keys()
+        ],
+        value="Droite",
+        width=300,
+    )
+    # Le champ de marge a été supprimé puisque la marge est imposée à 50 %
+    devis_remise = ft.TextField(label="Remise client (%)", width=300)
     devis_message = ft.Text()
     histogram_image = ft.Image(src="", width=400, visible=False)
 
@@ -376,19 +406,16 @@ def main(page: ft.Page):
 
     def on_ajouter_devis(e):
         try:
-            materiau = materiau_dropdown.value
-            longueur = float(devis_longueur.value)
-            pieces = int(devis_pieces.value)
-            marge = float(devis_marge.value)
+            metal = metal_dropdown.value
+            quantite_ml = float(devis_quantite.value)
+            forme = forme_dropdown.value
             remise = float(devis_remise.value)
+            # Appel de la fonction en fixant la marge à 50%
             devis_data = ajouter_devis(
-                devis_nom_client.value, materiau, longueur, pieces, marge, remise
+                devis_nom_client.value, metal, quantite_ml, forme, remise
             )
             pdf_file = generer_pdf(devis_data)
-            devis_message.value = (
-                f"Devis ajouté avec succès !\nPrix Total: {devis_data['Prix Total']:.2f} €\n"
-                f"PDF généré: {pdf_file}"
-            )
+            devis_message.value = f"Devis ajouté avec succès !\nPrix Total: {devis_data['Prix Total']:.2f} €\nPDF généré: {pdf_file}"
             page.show_snack_bar(ft.SnackBar(ft.Text("Devis ajouté et PDF généré.")))
             page.update()
         except Exception as ex:
@@ -413,10 +440,9 @@ def main(page: ft.Page):
             devis_nom_client,
             ft.ElevatedButton("Rechercher Client", on_click=on_rechercher_client),
             devis_detail_client,
-            materiau_dropdown,
-            devis_longueur,
-            devis_pieces,
-            devis_marge,
+            metal_dropdown,
+            devis_quantite,
+            forme_dropdown,
             devis_remise,
             ft.ElevatedButton("Ajouter Devis", on_click=on_ajouter_devis),
             ft.ElevatedButton("Générer Histogramme", on_click=on_generer_histogramme),
@@ -428,7 +454,7 @@ def main(page: ft.Page):
         horizontal_alignment="center",
     )
 
-    # Conteneur de contenu de l'onglet (on alterne entre client_view et devis_view)
+    # Conteneur pour alterner entre la gestion des Clients et des Devis
     content_container = ft.Container(content=client_view)
 
     def switch_tab(tab: str):
@@ -459,7 +485,7 @@ def main(page: ft.Page):
         visible=False,
     )
 
-    # --- Gestion du changement de vue ---
+    # Gestion du changement de vue
     def switch_view(view_name: str):
         login_view.visible = view_name == "login"
         auth_view.visible = view_name == "auth"
@@ -475,11 +501,10 @@ def main(page: ft.Page):
             )
             page.update()
 
-    # Assigner les événements aux boutons
+    # Assignation des événements aux boutons
     login_button.on_click = lambda e: switch_view("auth")
     auth_button.on_click = validate_auth
 
-    # Ajouter les vues à la page
     page.add(login_view, auth_view, main_view)
 
 
