@@ -20,10 +20,13 @@ class CSVManager:
             return rows
 
     def write_csv(self, chemin_fichier, donnees, en_tetes):
+        print("Writing CSV file: ", chemin_fichier)
+        print("Data: write_csv ", donnees)
         with open(chemin_fichier, "w", newline="", encoding="utf-8") as fichier:
             ecrivain = csv.DictWriter(fichier, fieldnames=en_tetes)
             ecrivain.writeheader()
             ecrivain.writerows(donnees)
+            print("Data written to CSV file.")
 
     def ajouter_csv(self, chemin_fichier, donnees):
         # Si le fichier n'existe pas ou est vide, on écrit également les en-têtes

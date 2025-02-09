@@ -29,7 +29,7 @@ class Main:
         self.client_manager = ClientManager(csv_manager=self.csv_manager)
         self.histogramme_manager = HistogrammeManager(csv_manager=self.csv_manager)
 
-        # Les champs et contrôles seront initialisés dans self.main(...)
+        # La page Flet
         self.page = None
 
         # Champs pour la vue Clients
@@ -39,6 +39,12 @@ class Main:
         self.client_telephone = None
         self.client_entreprise = None
         self.client_message = None
+
+        # Pour mémoriser le client sélectionné (pour modification/suppression)
+        self.selected_client_nom = None  # nous utilisons le nom comme identifiant
+
+        # Pour la liste déroulante des clients (visible uniquement pour l'admin)
+        self.client_dropdown = None
 
         # Champs pour la vue Devis
         self.devis_nom_client = None
@@ -50,6 +56,10 @@ class Main:
         self.devis_message = None
         self.histogram_image = None
         self.devis_form_container = None
+
+        # Boutons pour modification/suppression (admin)
+        self.modify_button = None
+        self.delete_button = None
 
         # Conteneur principal pour alterner entre Clients et Devis
         self.content_container = None
@@ -63,15 +73,11 @@ class Main:
         self.username_field = None
         self.password_field = None
 
-        # Boutons de modification/suppression (admin)
-        self.modify_button = None
-        self.delete_button = None
-
         # Pour savoir si on est admin ou pas (optionnel)
         self.is_admin = False
 
     # ----------------------------------------------------------------
-    # Méthodes de rappel (event handlers)
+    # MÉTHODES D'ACTION (event handlers)
     # ----------------------------------------------------------------
 
     def on_ajouter_client(self, e):
@@ -85,22 +91,13 @@ class Main:
                 self.client_entreprise.value,
             )
             self.client_message.value = "Client ajouté avec succès !"
-
-            # Mise à jour du champ Nom Client dans la vue Devis
-            self.devis_nom_client.value = self.client_nom.value
-
-            # Réinitialisation des champs
-            self.client_nom.value = ""
-            self.client_adresse.value = ""
-            self.client_code_postal.value = ""
-            self.client_telephone.value = ""
-            self.client_entreprise.value = ""
-
-            # Notification via SnackBar
             self.page.snack_bar = ft.SnackBar(ft.Text("Client ajouté avec succès !"))
             self.page.snack_bar.open = True
+            self.clear_client_form()
+            # Actualiser la liste déroulante si elle existe (mode admin)
+            if self.client_dropdown:
+                self.load_client_dropdown()
             self.page.update()
-
         except Exception as ex:
             self.page.snack_bar = ft.SnackBar(ft.Text(f"Erreur: {ex}"))
             self.page.snack_bar.open = True
@@ -194,21 +191,110 @@ class Main:
         self.devis_message.value = ""
         self.page.update()
 
+    # --- MÉTHODES POUR LA GESTION DES CLIENTS (ADMIN) ---
     def on_modifier_client(self, e):
-        """Gère la modification d'un client (ADMIN)."""
-        self.page.snack_bar = ft.SnackBar(
-            ft.Text("Fonction de modification de client à implémenter")
-        )
-        self.page.snack_bar.open = True
+        """Modifie le client sélectionné dans la liste déroulante."""
+        if not self.selected_client_nom:
+            self.page.snack_bar = ft.SnackBar(
+                ft.Text("Veuillez sélectionner un client à modifier dans la liste.")
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
+            return
+        try:
+            new_nom = self.client_nom.value
+            new_adresse = self.client_adresse.value
+            new_code_postal = self.client_code_postal.value
+            new_telephone = self.client_telephone.value
+            new_entreprise = self.client_entreprise.value
+
+            # On délègue la modification au client_manager en passant l'ancien nom comme identifiant
+            self.client_manager.modify_client(
+                self.selected_client_nom,
+                new_nom,
+                new_adresse,
+                new_code_postal,
+                new_telephone,
+                new_entreprise,
+            )
+            self.page.snack_bar = ft.SnackBar(ft.Text("Client modifié avec succès."))
+            self.page.snack_bar.open = True
+            self.clear_client_form()
+            # Actualiser la liste déroulante
+            if self.client_dropdown:
+                self.load_client_dropdown()
+        except Exception as ex:
+            self.page.snack_bar = ft.SnackBar(
+                ft.Text(f"Erreur lors de la modification: {ex}")
+            )
+            self.page.snack_bar.open = True
         self.page.update()
 
     def on_supprimer_client(self, e):
-        """Gère la suppression d'un client (ADMIN)."""
-        self.page.snack_bar = ft.SnackBar(
-            ft.Text("Fonction de suppression de client à implémenter")
-        )
-        self.page.snack_bar.open = True
+        """Supprime le client actuellement affiché dans le formulaire (mode admin)."""
+        if not self.selected_client_nom:
+            self.page.snack_bar = ft.SnackBar(
+                ft.Text("Veuillez sélectionner un client à supprimer dans la liste.")
+            )
+            self.page.snack_bar.open = True
+            self.page.update()
+            return
+        # Pour confirmation, vous pouvez également afficher une AlertDialog (cf. votre version précédente)
+        try:
+            self.client_manager.delete_client(self.selected_client_nom)
+            self.page.snack_bar = ft.SnackBar(ft.Text("Client supprimé avec succès."))
+            self.page.snack_bar.open = True
+            self.clear_client_form()
+            if self.client_dropdown:
+                self.load_client_dropdown()
+        except Exception as ex:
+            self.page.snack_bar = ft.SnackBar(
+                ft.Text(f"Erreur lors de la suppression: {ex}")
+            )
+            self.page.snack_bar.open = True
         self.page.update()
+
+    def clear_client_form(self):
+        """Réinitialise le formulaire de saisie client."""
+        self.client_nom.value = ""
+        self.client_adresse.value = ""
+        self.client_code_postal.value = ""
+        self.client_telephone.value = ""
+        self.client_entreprise.value = ""
+        self.selected_client_nom = None
+        self.page.update()
+
+    def load_client_dropdown(self):
+        """Charge les options du Dropdown à partir des données du CSV."""
+        clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
+        options = [
+            ft.dropdown.Option(key=client["Nom"], text=client["Nom"])
+            for client in clients
+        ]
+        self.client_dropdown.options = options
+        self.client_dropdown.value = None  # pas de sélection par défaut
+        self.page.update()
+
+    def on_client_dropdown_changed(self, e):
+        """Lorsqu'un client est sélectionné dans la liste déroulante, remplir le formulaire."""
+        selected_name = self.client_dropdown.value
+        if not selected_name:
+            return
+        clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
+        for client in clients:
+            if client["Nom"].strip() == selected_name.strip():
+                self.client_nom.value = client["Nom"]
+                self.client_adresse.value = client["Adresse"]
+                self.client_code_postal.value = client["Code Postal"]
+                self.client_telephone.value = client["Téléphone"]
+                self.client_entreprise.value = client["Entreprise"]
+                self.selected_client_nom = client["Nom"]
+                break
+        self.page.update()
+
+    # ----------------------------------------------------------------
+    # Méthodes d'authentification et de navigation
+    # ----------------------------------------------------------------
 
     def on_login_admin(self, e):
         """Redirige vers la vue d'authentification."""
@@ -218,23 +304,20 @@ class Main:
         """
         Valide les identifiants.
         - Si vides => utilisateur simple => vue main
-        - Si admin/password => admin => vue main + bouton suppr visible
+        - Si admin/password => admin => vue main avec boutons admin visibles
         - Sinon => erreur
         """
         user = self.username_field.value
         pwd = self.password_field.value
 
         if user == "" and pwd == "":
-            # Utilisateur standard
             self.is_admin = False
             self.switch_view("main")
             print("Après login user normal, is_admin =", self.is_admin)
         elif user == "1" and pwd == "1":
-            # Admin
             self.is_admin = True
             self.switch_view("main")
-            print("Après login admin, is_admin =", self.is_admin)  # <-- ICI
-            # self.modify_button.visible = True  # si besoin
+            print("Après login admin, is_admin =", self.is_admin)
         else:
             self.page.snack_bar = ft.SnackBar(
                 ft.Text("Nom d'utilisateur ou mot de passe incorrect")
@@ -257,14 +340,14 @@ class Main:
             [
                 ft.Container(
                     ft.Text("Bienvenue sur CutSharp", size=24),
-                    alignment=ft.alignment.center,  # Centrer horizontalement
+                    alignment=ft.alignment.center,
                 ),
                 ft.Container(
                     login_button,
-                    alignment=ft.alignment.center,  # Centrer horizontalement
+                    alignment=ft.alignment.center,
                 ),
             ],
-            alignment="center",  # Centrer verticalement
+            alignment="center",
             spacing=10,
         )
 
@@ -280,27 +363,28 @@ class Main:
             [
                 ft.Container(
                     ft.Text("Veuillez vous authentifier", size=20),
-                    alignment=ft.alignment.center,  # Centrer horizontalement le titre
+                    alignment=ft.alignment.center,
                 ),
                 ft.Container(
                     self.username_field,
-                    alignment=ft.alignment.center,  # Centrer horizontalement le champ username
+                    alignment=ft.alignment.center,
                 ),
                 ft.Container(
                     self.password_field,
-                    alignment=ft.alignment.center,  # Centrer horizontalement le champ password
+                    alignment=ft.alignment.center,
                 ),
                 ft.Container(
                     auth_button,
-                    alignment=ft.alignment.center,  # Centrer horizontalement le bouton
+                    alignment=ft.alignment.center,
                 ),
             ],
-            alignment="center",  # Aligne verticalement les éléments dans la colonne
-            spacing=10,  # Ajoute un espacement entre les éléments
+            alignment="center",
+            spacing=10,
         )
 
     def _build_client_view(self) -> ft.Column:
         """Vue pour la gestion des clients."""
+        # --- Construction du formulaire de saisie ---
         self.client_nom = ft.TextField(label="Nom *", width=300)
         self.client_adresse = ft.TextField(label="Adresse *", width=300)
         self.client_code_postal = ft.TextField(label="Code Postal *", width=300)
@@ -308,41 +392,74 @@ class Main:
         self.client_entreprise = ft.TextField(label="Entreprise", width=300)
         self.client_message = ft.Text()
 
-        self.modify_button = ft.ElevatedButton(
-            "Modifier Client", on_click=self.on_modifier_client, visible=False
+        add_client_button = ft.ElevatedButton(
+            "Ajouter Client", on_click=self.on_ajouter_client
         )
-        self.delete_button = ft.ElevatedButton(
-            "Supprimer Client", on_click=self.on_supprimer_client, visible=False
-        )
-        return ft.Column(
+
+        # Boutons de modification/suppression (affichés en mode admin)
+        admin_buttons = []
+        if self.is_admin:
+            self.modify_button = ft.ElevatedButton(
+                "Modifier Client", on_click=self.on_modifier_client
+            )
+            self.delete_button = ft.ElevatedButton(
+                "Supprimer Client", on_click=self.on_supprimer_client
+            )
+            admin_buttons = [self.modify_button, self.delete_button]
+
+        form_column = ft.Column(
             [
                 ft.Text("Gestion des Clients", size=20),
                 ft.Text("Ajouter un nouveau client", size=16),
-                (
-                    ft.Text("Modifier Client", size=16)
-                    if self.is_admin
-                    else ft.Container()
-                ),  # si admin
-                (
-                    ft.Text("Supprimer Client", size=16)
-                    if self.is_admin
-                    else ft.Container()
-                ),  # si admin
                 ft.Text("Les champs marqués d'une * sont obligatoires", color="red"),
                 self.client_nom,
                 self.client_adresse,
                 self.client_code_postal,
                 self.client_telephone,
                 self.client_entreprise,
-                ft.ElevatedButton("Ajouter Client", on_click=self.on_ajouter_client),
+                add_client_button,
                 self.client_message,
-                self.modify_button,
-                self.delete_button,
-            ],
+            ]
+            + admin_buttons,
             spacing=10,
             alignment="center",
             horizontal_alignment="center",
         )
+
+        # --- Si l'utilisateur est administrateur, afficher la liste déroulante ---
+        if self.is_admin:
+            # Création du Dropdown pour la liste des clients
+            self.client_dropdown = ft.Dropdown(
+                label="Liste des Clients",
+                width=300,
+                on_change=self.on_client_dropdown_changed,
+            )
+            self.load_client_dropdown()
+            dropdown_column = ft.Column(
+                [self.client_dropdown],
+                spacing=10,
+                alignment="center",
+                horizontal_alignment="center",
+            )
+            # Organiser la vue en deux colonnes : le formulaire à gauche et la liste déroulante à droite
+            return ft.Column(
+                [
+                    ft.Row(
+                        [
+                            form_column,
+                            ft.VerticalDivider(width=1),
+                            dropdown_column,
+                        ],
+                        spacing=20,
+                        alignment="center",
+                    )
+                ],
+                spacing=20,
+                alignment="center",
+                horizontal_alignment="center",
+            )
+        else:
+            return form_column
 
     def _build_devis_view(self) -> ft.Column:
         """Vue pour la gestion des devis."""
@@ -406,10 +523,7 @@ class Main:
             content=devis_characteristics, visible=False
         )
         left_side = ft.Column(
-            [
-                client_search_container,
-                self.devis_form_container,
-            ],
+            [client_search_container, self.devis_form_container],
             spacing=20,
             alignment="start",
             horizontal_alignment="start",
@@ -430,19 +544,15 @@ class Main:
         )
 
         return ft.Column(
-            [
-                ft.Text("Gestion des Devis", size=20),
-                main_content,
-            ],
+            [ft.Text("Gestion des Devis", size=20), main_content],
             spacing=20,
             alignment="center",
             horizontal_alignment="center",
         )
 
-    # 1) Construire le header (barre de navigation)
     def _build_header(self) -> ft.Row:
         """
-        Header avec:
+        Header avec :
           - Bouton Clients
           - Bouton Devis
           - Bouton Logout => retour à la vue auth
@@ -466,15 +576,9 @@ class Main:
     def _build_main_view(self) -> ft.Column:
         """Vue principale (avec onglets Clients / Devis)."""
         self.content_container = ft.Container(content=self._build_client_view())
-
-        # 2) On place le header tout en haut
         header = self._build_header()
-
         return ft.Column(
-            [
-                header,  # Ajout du header
-                self.content_container,  # Zone où on bascule Clients / Devis
-            ],
+            [header, self.content_container],
             spacing=20,
             alignment="center",
             horizontal_alignment="center",
@@ -500,9 +604,8 @@ class Main:
         self.main_view.visible = view_name == "main"
 
         if view_name == "main":
-            self.content_container.content = (
-                self._build_client_view()
-            )  # Reconstruire la vue des clients
+            # Reconstruire la vue des clients (les boutons admin et la liste déroulante s'afficheront si is_admin est True)
+            self.content_container.content = self._build_client_view()
 
         self.page.update()
 
@@ -527,11 +630,7 @@ class Main:
         # On met les trois vues dans un conteneur
         content_container = ft.Container(
             content=ft.Column(
-                [
-                    self.login_view,
-                    self.auth_view,
-                    self.main_view,
-                ],
+                [self.login_view, self.auth_view, self.main_view],
                 alignment="center",
                 horizontal_alignment="center",
                 spacing=20,
