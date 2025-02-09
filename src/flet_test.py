@@ -255,11 +255,16 @@ class Main:
         )
         return ft.Column(
             [
-                ft.Text("Bienvenue sur CutSharp", size=24),
-                login_button,
+                ft.Container(
+                    ft.Text("Bienvenue sur CutSharp", size=24),
+                    alignment=ft.alignment.center,  # Centrer horizontalement
+                ),
+                ft.Container(
+                    login_button,
+                    alignment=ft.alignment.center,  # Centrer horizontalement
+                ),
             ],
-            alignment="center",
-            horizontal_alignment="center",
+            alignment="center",  # Centrer verticalement
             spacing=10,
         )
 
@@ -273,14 +278,25 @@ class Main:
 
         return ft.Column(
             [
-                ft.Text("Veuillez vous authentifier", size=20),
-                self.username_field,
-                self.password_field,
-                auth_button,
+                ft.Container(
+                    ft.Text("Veuillez vous authentifier", size=20),
+                    alignment=ft.alignment.center,  # Centrer horizontalement le titre
+                ),
+                ft.Container(
+                    self.username_field,
+                    alignment=ft.alignment.center,  # Centrer horizontalement le champ username
+                ),
+                ft.Container(
+                    self.password_field,
+                    alignment=ft.alignment.center,  # Centrer horizontalement le champ password
+                ),
+                ft.Container(
+                    auth_button,
+                    alignment=ft.alignment.center,  # Centrer horizontalement le bouton
+                ),
             ],
-            alignment="center",
-            horizontal_alignment="center",
-            spacing=10,
+            alignment="center",  # Aligne verticalement les éléments dans la colonne
+            spacing=10,  # Ajoute un espacement entre les éléments
         )
 
     def _build_client_view(self) -> ft.Column:
@@ -521,7 +537,7 @@ class Main:
                 spacing=20,
             ),
             expand=True,
-            bgcolor=ft.colors.with_opacity(0.5, "#deeeed"),
+            bgcolor=ft.colors.with_opacity(0.5, "#89CFF0"),
         )
 
         page.add(content_container)
