@@ -31,5 +31,5 @@ FORME_COEFFICIENT = {
 # =======================
 # Fonctions utilitaires CSV / PDF
 # =======================
-FICHIER_CLIENTS = "clients.csv"
-FICHIER_DEVIS = "devis.csv"
+FICHIER_CLIENTS = "datas/inputs_csv/clients.csv"
+FICHIER_DEVIS = "datas/inputs_csv/devis.csv"
