@@ -1,6 +1,4 @@
-# =======================
-# Constantes et données
-# =======================
+""" Fichier de constantes pour le projet de découpe laser """
 
 TVA = 0.2
 TARIF_MACHINE = 0.3

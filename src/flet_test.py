@@ -1,27 +1,31 @@
+""" Application de gestion de clients et devis pour CutSharp. """
+
 from pathlib import Path
+
 import flet as ft
-from constants import (
-    METAL_PROPERTIES,
-    FORME_COEFFICIENT,
-    FICHIER_CLIENTS,
-)
-from csv_manager import CSVManager
-from pdf_manager import PDFManager
-from devis_manager import DevisManager
+
 from client_manager import ClientManager
+from constants import FICHIER_CLIENTS, FORME_COEFFICIENT, METAL_PROPERTIES
+from csv_manager import CSVManager
+from devis_manager import DevisManager
 from histogramme_manager import HistogrammeManager
+from pdf_manager import PDFManager
 
 # --- Chemin et import d'image ---
 output_Path = Path(__file__).parent
 
 
 def importimage(path: str) -> Path:
+    """Importe une image depuis le dossier 'images'."""
     filepath = output_Path / Path(path)
     return filepath
 
 
 class Main:
+    """Classe principale de l'application."""
+
     def __init__(self):
+        """Initialisation de l'application."""
         # Instanciation de vos managers
         self.csv_manager = CSVManager()
         self.pdf_manager = PDFManager(csv_manager=self.csv_manager)
@@ -80,7 +84,7 @@ class Main:
     # MÉTHODES D'ACTION (event handlers)
     # ----------------------------------------------------------------
 
-    def on_ajouter_client(self, e):
+    def on_ajouter_client(self, e=None):
         """
         Handles the addition of a client.
         This method attempts to add a new client using the provided client details.
@@ -102,7 +106,9 @@ class Main:
                 self.client_entreprise.value,
             )
             if not created_client:
-                self.client_message.value = "Le client existe déjà"
+                self.client_message.value = (
+                    "Le nom que vous avez indiqué est déjà utilisé"
+                )
                 self.client_message.color = "red"
             else:
                 self.client_message.value = "Client ajouté avec succès !"
@@ -116,7 +122,7 @@ class Main:
             self.client_message.value = f"Erreur: {ex}"
             self.page.update()
 
-    def on_rechercher_client(self, e):
+    def on_rechercher_client(self, e=None):
         """
         Handles the search for a client by their name.
         This method retrieves the client's name from the input field, searches for the client
@@ -162,7 +168,7 @@ class Main:
             self.page.snack_bar.open = True
         self.page.update()
 
-    def on_ajouter_devis(self, e):
+    def on_ajouter_devis(self, e=None):
         """Gère l'ajout d'un devis et la génération du PDF."""
         try:
             metal = self.metal_dropdown.value
@@ -190,7 +196,7 @@ class Main:
             self.page.snack_bar.open = True
             self.page.update()
 
-    def on_generer_histogramme(self, e):
+    def on_generer_histogramme(self, e=None):
         """Génère l'histogramme depuis les données du CSV."""
         image_path = self.histogramme_manager.generer_histogramme_image()
         if image_path:
@@ -204,7 +210,7 @@ class Main:
             self.page.snack_bar.open = True
             self.page.update()
 
-    def on_reset_devis(self, e):
+    def on_reset_devis(self, e=None):
         """Réinitialise les champs de saisie pour la création de devis."""
         self.metal_dropdown.value = list(METAL_PROPERTIES.keys())[0]
         self.devis_quantite.value = ""
@@ -214,7 +220,7 @@ class Main:
         self.page.update()
 
     # --- MÉTHODES POUR LA GESTION DES CLIENTS (ADMIN) ---
-    def on_modifier_client(self, e):
+    def on_modifier_client(self, e=None):
         """Modifie le client sélectionné dans la liste déroulante."""
         if not self.selected_client_nom:
             self.page.snack_bar = ft.SnackBar(
@@ -252,7 +258,7 @@ class Main:
             self.page.snack_bar.open = True
         self.page.update()
 
-    def on_supprimer_client(self, e):
+    def on_supprimer_client(self, e=None):
         """Supprime le client actuellement affiché dans le formulaire (mode admin)."""
         if not self.selected_client_nom:
             self.page.snack_bar = ft.SnackBar(
@@ -261,7 +267,8 @@ class Main:
             self.page.snack_bar.open = True
             self.page.update()
             return
-        # Pour confirmation, vous pouvez également afficher une AlertDialog (cf. votre version précédente)
+        # Pour confirmation, vous pouvez également
+        # afficher une AlertDialog (cf. votre version précédente)
         try:
             self.client_manager.delete_client(self.selected_client_nom)
             self.page.snack_bar = ft.SnackBar(ft.Text("Client supprimé avec succès."))
@@ -276,7 +283,7 @@ class Main:
             self.page.snack_bar.open = True
         self.page.update()
 
-    def clear_client_form(self):
+    def clear_client_form(self, e=None):
         """Réinitialise le formulaire de saisie client."""
         self.client_nom.value = ""
         self.client_adresse.value = ""
@@ -286,7 +293,7 @@ class Main:
         self.selected_client_nom = None
         self.page.update()
 
-    def load_client_dropdown(self):
+    def load_client_dropdown(self, e=None):
         """Charge les options du Dropdown à partir des données du CSV."""
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         options = [
@@ -297,7 +304,7 @@ class Main:
         self.client_dropdown.value = None  # pas de sélection par défaut
         self.page.update()
 
-    def on_client_dropdown_changed(self, e):
+    def on_client_dropdown_changed(self, e=None):
         """Lorsqu'un client est sélectionné dans la liste déroulante, remplir le formulaire."""
         selected_name = self.client_dropdown.value
         if not selected_name:
@@ -318,11 +325,11 @@ class Main:
     # Méthodes d'authentification et de navigation
     # ----------------------------------------------------------------
 
-    def on_login_admin(self, e):
+    def on_login_admin(self, e=None):
         """Redirige vers la vue d'authentification."""
         self.switch_view("auth")
 
-    def validate_auth(self, e):
+    def validate_auth(self, e=None):
         """
         Valide les identifiants.
         - Si vides => utilisateur simple => vue main
@@ -350,7 +357,7 @@ class Main:
     # Méthodes de construction des vues / UI
     # ----------------------------------------------------------------
 
-    def _build_login_view(self) -> ft.Column:
+    def _build_login_view(self, e=None) -> ft.Column:
         """Vue de bienvenue (login)."""
         login_button = ft.ElevatedButton(
             text="Se connecter",
@@ -371,7 +378,7 @@ class Main:
             spacing=10,
         )
 
-    def _build_auth_view(self) -> ft.Column:
+    def _build_auth_view(self, e=None) -> ft.Column:
         """Vue d'authentification (saisie identifiants)."""
         self.username_field = ft.TextField(label="Nom d'utilisateur", width=300)
         self.password_field = ft.TextField(
@@ -402,7 +409,7 @@ class Main:
             spacing=10,
         )
 
-    def _build_client_view(self) -> ft.Column:
+    def _build_client_view(self, e=None) -> ft.Column:
         """Vue pour la gestion des clients."""
         # --- Construction du formulaire de saisie ---
         self.client_nom = ft.TextField(label="Nom *", width=300)
@@ -461,7 +468,8 @@ class Main:
                 alignment="center",
                 horizontal_alignment="center",
             )
-            # Organiser la vue en deux colonnes : le formulaire à gauche et la liste déroulante à droite
+            # Organiser la vue en deux colonnes :
+            # le formulaire à gauche et la liste déroulante à droite
             return ft.Column(
                 [
                     ft.Row(
@@ -478,10 +486,9 @@ class Main:
                 alignment="center",
                 horizontal_alignment="center",
             )
-        else:
-            return form_column
+        return form_column
 
-    def _build_devis_view(self) -> ft.Column:
+    def _build_devis_view(self, e=None) -> ft.Column:
         """Vue pour la gestion des devis."""
         self.devis_nom_client = ft.TextField(label="Nom Client", width=300)
         self.devis_detail_client = ft.Text("", color="blue")
@@ -593,7 +600,7 @@ class Main:
             spacing=20,
         )
 
-    def _build_main_view(self) -> ft.Column:
+    def _build_main_view(self, e=None) -> ft.Column:
         """Vue principale (avec onglets Clients / Devis)."""
         self.content_container = ft.Container(content=self._build_client_view())
         header = self._build_header()
@@ -624,7 +631,8 @@ class Main:
         self.main_view.visible = view_name == "main"
 
         if view_name == "main":
-            # Reconstruire la vue des clients (les boutons admin et la liste déroulante s'afficheront si is_admin est True)
+            # Reconstruire la vue des clients (les boutons
+            # admin et la liste déroulante s'afficheront si is_admin est True)
             self.content_container.content = self._build_client_view()
 
         self.page.update()

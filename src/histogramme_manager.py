@@ -1,7 +1,11 @@
-from csv_manager import CSVManager
-from matplotlib import pyplot as plt
-from constants import FICHIER_DEVIS
+""" Module containing the HistogrammeManager class. """
+
 from datetime import datetime
+
+from matplotlib import pyplot as plt
+
+from constants import FICHIER_DEVIS
+from csv_manager import CSVManager
 
 
 class HistogrammeManager:
@@ -45,7 +49,7 @@ class HistogrammeManager:
         plt.xlabel("Intervalle de prix (€)")
         plt.ylabel("Nombre de devis")
         image_path = (
-            f"datas/outputs_png/histogram{datetime.now().strftime("%Y%m%d%H%M%S")}.png"
+            f"datas/outputs_png/histogram{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
         )
         plt.savefig(image_path)
         plt.close()

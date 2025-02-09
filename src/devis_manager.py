@@ -1,23 +1,30 @@
-from csv_manager import CSVManager
+""" Module contenant la classe DevisManager pour gérer les devis de découpe de métal. """
+
+from datetime import datetime
+
 from constants import (
+    FICHIER_DEVIS,
+    FORME_COEFFICIENT,
+    FRAIS_FIXES,
     METAL_PROPERTIES,
     TARIF_MACHINE,
     TARIF_OPERATEUR,
-    FRAIS_FIXES,
     TVA,
-    FORME_COEFFICIENT,
-    FICHIER_DEVIS,
 )
-from datetime import datetime
+from csv_manager import CSVManager
 
 
 class DevisManager:
+    """Classe pour gérer les devis de découpe de métal."""
+
     def __init__(self, csv_manager: CSVManager):
+        """Initialisation de la classe DevisManager."""
         self.csv_manager = csv_manager
 
     def calculer_devis(self, metal, quantite_ml, forme, remise_client):
         """
-        Calcule le devis pour la découpe d'un métal donné en fonction de la quantité, de la forme et de la remise client.
+        Calcule le devis pour la découpe d'un métal
+        donné en fonction de la quantité, de la forme et de la remise client.
 
         Args:
             metal (str): Le type de métal à découper.
@@ -88,7 +95,6 @@ class DevisManager:
         forme: str,
         remise_client: str,
     ) -> dict:
-
         devis = self.calculer_devis(metal, quantite_ml, forme, remise_client)
         donnees_devis = {
             "Nom Client": nom_client.upper(),

@@ -1,5 +1,7 @@
-import os
+""" Module CSVManager"""
+
 import csv
+import os
 
 
 class CSVManager:
@@ -47,11 +49,13 @@ class CSVManager:
 
         Args:
             chemin_fichier (str): Le chemin du fichier CSV.
-            donnees (list): Les données à ajouter au fichier CSV. Peut être une liste de dictionnaires
+            donnees (list): Les données à ajouter au
+            fichier CSV. Peut être une liste de dictionnaires
                             ou un seul dictionnaire.
 
         Raises:
-            OSError: Si une erreur se produit lors de l'ouverture ou de l'écriture dans le fichier.
+            OSError: Si une erreur se produit lors de
+            l'ouverture ou de l'écriture dans le fichier.
         """
         # Si le fichier n'existe pas ou est vide, on écrit également les en-têtes
         if not os.path.exists(chemin_fichier) or os.stat(chemin_fichier).st_size == 0:

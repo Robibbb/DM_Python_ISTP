@@ -1,13 +1,19 @@
-from constants import FICHIER_CLIENTS
+""" Module to manage the generation of PDF documents for quotes (devis). """
+
+from datetime import datetime
 
 # import platform
 from fpdf import FPDF
-from datetime import datetime
+
+from constants import FICHIER_CLIENTS
 from csv_manager import CSVManager
 
 
 class PDFManager:
+    """Class to manage the generation of PDF documents for quotes (devis)."""
+
     def __init__(self, csv_manager: CSVManager):
+        """ " Initialize the PDFManager with a CSVManager instance."""
         self.csv_manager = csv_manager
 
     def generer_pdf(self, devis: dict) -> str:
@@ -25,7 +31,8 @@ class PDFManager:
             - Quote number
             - A summary table of the quote details
             - Footer with creation information
-        The PDF is saved in the 'datas/outputs_pdf/' directory with a filename based on the client's name and the current timestamp.
+        The PDF is saved in the 'datas/outputs_pdf/'
+        directory with a filename based on the client's name and the current timestamp.
         """
         pdf = FPDF()
         pdf.add_page()

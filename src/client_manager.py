@@ -1,12 +1,19 @@
-from fpdf import FPDF
+""" Module contenant la classe ClientManager """
+
 from datetime import datetime
+
+import flet as ft
+from fpdf import FPDF
+
 from constants import FICHIER_CLIENTS
 from csv_manager import CSVManager
-import flet as ft
 
 
 class ClientManager:
+    """Classe permettant de gérer les clients"""
+
     def __init__(self, csv_manager: CSVManager):
+        """Constructeur de la classe ClientManager"""
         self.csv_manager = csv_manager
 
     def add_client(
@@ -23,7 +30,8 @@ class ClientManager:
             entreprise (str, optional): The company name of the client. Defaults to "".
 
         Returns:
-            bool: True if the client was added successfully, False if a client with the same name already exists.
+            bool: True if the client was added successfully,
+            False if a client with the same name already exists.
         """
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         # Vérifier si un client avec le même nom existe déjà (comparaison en majuscules)
