@@ -83,24 +83,27 @@ class Main:
     def on_ajouter_client(self, e):
         """Gère l'ajout d'un client."""
         try:
-            self.client_manager.add_client(
+            created_client = self.client_manager.add_client(
                 self.client_nom.value,
                 self.client_adresse.value,
                 self.client_code_postal.value,
                 self.client_telephone.value,
                 self.client_entreprise.value,
             )
-            self.client_message.value = "Client ajouté avec succès !"
-            self.page.snack_bar = ft.SnackBar(ft.Text("Client ajouté avec succès !"))
-            self.page.snack_bar.open = True
-            self.clear_client_form()
+            print("created_client", created_client)
+            if not created_client:
+                self.client_message.value = "Le client existe déjà"
+                self.client_message.color = "red"
+            else:
+                self.client_message.value = "Client ajouté avec succès !"
+                self.clear_client_form()
             # Actualiser la liste déroulante si elle existe (mode admin)
             if self.client_dropdown:
                 self.load_client_dropdown()
             self.page.update()
+
         except Exception as ex:
-            self.page.snack_bar = ft.SnackBar(ft.Text(f"Erreur: {ex}"))
-            self.page.snack_bar.open = True
+            self.client_message.value = f"Erreur: {ex}"
             self.page.update()
 
     def on_rechercher_client(self, e):

@@ -2,6 +2,7 @@ from fpdf import FPDF
 from datetime import datetime
 from constants import FICHIER_CLIENTS
 from csv_manager import CSVManager
+import flet as ft
 
 
 class ClientManager:
@@ -12,7 +13,14 @@ class ClientManager:
         self, nom: str, adresse: str, code_postal, telephone, entreprise: str = ""
     ):
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
-        print("clients in add_client", clients)
+        # Vérifier si un client avec le même nom existe déjà (comparaison en majuscules)
+        for client in clients:
+            print("test", client["Nom"].upper().strip(), nom.upper().strip())
+            if client["Nom"].upper().strip() == nom.upper().strip():
+                print("Equal", client["Nom"].upper().strip(), nom.upper().strip())
+                return False
+
+        # Si le nom est unique, on ajoute le client
         clients.append(
             {
                 "Nom": nom.upper(),
@@ -22,12 +30,14 @@ class ClientManager:
                 "Entreprise": entreprise.replace(" ", ""),
             }
         )
-        print("clients after append", clients)
+        print("clients before write", clients)
         self.csv_manager.write_csv(
             FICHIER_CLIENTS,
             clients,
             en_tetes=["Nom", "Adresse", "Code Postal", "Téléphone", "Entreprise"],
         )
+        print("clients after write", clients)
+        return True
 
     def get_client(self, name: str):
         """Retourne le client dont le nom correspond à 'name' ou None si non trouvé."""
@@ -48,9 +58,17 @@ class ClientManager:
     ):
         """
         Modifie le client dont le nom est old_name avec les nouvelles valeurs.
-        L'utilisation de .upper() et de .replace(" ", "") permet d'assurer une certaine cohérence.
+        Avant de modifier, on vérifie que le nouveau nom n'est pas déjà utilisé
+        par un autre client (si le nouveau nom diffère de l'ancien).
         """
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
+        # Vérifier que le nouveau nom n'est pas déjà utilisé par un autre client
+        for client in clients:
+            if (
+                client["Nom"].strip() == new_nom.upper().strip()
+                and client["Nom"].strip() != old_name.upper().strip()
+            ):
+                raise Exception("Le nom est déjà pris par un autre client")
         found = False
         for client in clients:
             if client["Nom"].strip() == old_name.strip():
@@ -58,7 +76,7 @@ class ClientManager:
                 client["Adresse"] = new_adresse.upper()
                 client["Code Postal"] = new_code_postal
                 client["Téléphone"] = new_telephone.replace(" ", "")
-                client["Entreprise"] = new_entreprise.replace(" ", "")
+                client["Entreprise"] = new_entreprise.upper()
                 found = True
                 break
         if not found:
@@ -74,7 +92,6 @@ class ClientManager:
         Supprime le client dont le nom correspond à name.
         Si aucun client n'est supprimé, une exception est levée.
         """
-        print("ok")
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         new_clients = [
             client for client in clients if client["Nom"].strip() != name.strip()
