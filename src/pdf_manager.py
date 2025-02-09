@@ -10,7 +10,23 @@ class PDFManager:
     def __init__(self, csv_manager: CSVManager):
         self.csv_manager = csv_manager
 
-    def generer_pdf(self, devis):
+    def generer_pdf(self, devis: dict) -> str:
+        """
+        Generate a PDF document for a given quote (devis).
+        Args:
+            devis (dict): A dictionary containing the details of the quote.
+                          Expected keys include 'Nom Client', 'Adresse', 'Code Postal', 'Téléphone',
+                          and other relevant fields for the quote.
+        Returns:
+            str: The file path of the generated PDF document.
+        The generated PDF includes:
+            - Company title and details
+            - Client details
+            - Quote number
+            - A summary table of the quote details
+            - Footer with creation information
+        The PDF is saved in the 'datas/outputs_pdf/' directory with a filename based on the client's name and the current timestamp.
+        """
         pdf = FPDF()
         pdf.add_page()
 

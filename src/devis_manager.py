@@ -16,6 +16,25 @@ class DevisManager:
         self.csv_manager = csv_manager
 
     def calculer_devis(self, metal, quantite_ml, forme, remise_client):
+        """
+        Calcule le devis pour la découpe d'un métal donné en fonction de la quantité, de la forme et de la remise client.
+
+        Args:
+            metal (str): Le type de métal à découper.
+            quantite_ml (float): La quantité de métal à découper en millimètres linéaires.
+            forme (str): La forme de découpe.
+            remise_client (float): La remise accordée au client en pourcentage.
+
+        Returns:
+            dict: Un dictionnaire contenant les coûts détaillés et le prix total avec TVA.
+            - "Coût Matériaux" (float): Le coût des matériaux.
+            - "Coût Découpe" (float): Le coût de la découpe.
+            - "Frais Fixes" (float): Les frais fixes.
+            - "Prix Total" (float): Le prix total incluant la TVA.
+
+        Raises:
+            ValueError: Si le métal ou la forme de découpe n'est pas valide.
+        """
         # Marge fixe de 50 %
         marge = 50 / 100
         # Conversion de la remise client en décimal (entrée en %)
@@ -61,7 +80,15 @@ class DevisManager:
             "Prix Total": prix_total,
         }
 
-    def ajouter_devis(self, nom_client, metal, quantite_ml, forme, remise_client):
+    def ajouter_devis(
+        self,
+        nom_client: str,
+        metal: str,
+        quantite_ml: str,
+        forme: str,
+        remise_client: str,
+    ) -> dict:
+
         devis = self.calculer_devis(metal, quantite_ml, forme, remise_client)
         donnees_devis = {
             "Nom Client": nom_client.upper(),

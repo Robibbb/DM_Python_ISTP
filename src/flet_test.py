@@ -81,7 +81,18 @@ class Main:
     # ----------------------------------------------------------------
 
     def on_ajouter_client(self, e):
-        """Gère l'ajout d'un client."""
+        """
+        Handles the addition of a client.
+        This method attempts to add a new client using the provided client details.
+        If the client already exists, it sets an appropriate message. If the client
+        is added successfully, it clears the client form and updates the client
+        dropdown if it exists.
+        Args:
+            e: The event object (not used in this method).
+        Raises:
+            Exception: If an error occurs during the client addition process, an
+            error message is set with the exception details.
+        """
         try:
             created_client = self.client_manager.add_client(
                 self.client_nom.value,
@@ -90,7 +101,6 @@ class Main:
                 self.client_telephone.value,
                 self.client_entreprise.value,
             )
-            print("created_client", created_client)
             if not created_client:
                 self.client_message.value = "Le client existe déjà"
                 self.client_message.color = "red"
@@ -107,7 +117,16 @@ class Main:
             self.page.update()
 
     def on_rechercher_client(self, e):
-        """Recherche un client à partir de son nom."""
+        """
+        Handles the search for a client by their name.
+        This method retrieves the client's name from the input field, searches for the client
+        in the CSV file, and updates the UI with the client's details if found. If the client
+        is not found, it displays a message indicating that the client needs to be registered.
+        Args:
+            e: The event object (not used in this method).
+        Returns:
+            None
+        """
         nom = self.devis_nom_client.value.strip()
         if not nom:
             self.page.snack_bar = ft.SnackBar(
@@ -316,11 +335,9 @@ class Main:
         if user == "" and pwd == "":
             self.is_admin = False
             self.switch_view("main")
-            print("Après login user normal, is_admin =", self.is_admin)
         elif user == "1" and pwd == "1":
             self.is_admin = True
             self.switch_view("main")
-            print("Après login admin, is_admin =", self.is_admin)
         else:
             self.page.snack_bar = ft.SnackBar(
                 ft.Text("Nom d'utilisateur ou mot de passe incorrect")

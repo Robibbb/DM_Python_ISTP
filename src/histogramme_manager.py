@@ -9,8 +9,20 @@ class HistogrammeManager:
         self.csv_manager = csv_manager
 
     def generer_histogramme_image(self):
+        """
+        Generates a histogram image of quotes based on their total price intervals.
+
+        This method reads a CSV file containing quotes, extracts the total prices,
+        categorizes them into predefined intervals, and generates a histogram image
+        representing the number of quotes in each interval. The histogram image is
+        saved as a PNG file in the 'datas/outputs_png' directory with a timestamped
+        filename.
+
+        Returns:
+            str: The file path of the saved histogram image, or None if there was an error
+            reading the CSV file.
+        """
         devis_list = self.csv_manager.read_csv(FICHIER_DEVIS)
-        print("len(devis_list)", len(devis_list))
         try:
             montants = [
                 float(devis["Prix Total"])

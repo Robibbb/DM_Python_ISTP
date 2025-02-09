@@ -12,12 +12,23 @@ class ClientManager:
     def add_client(
         self, nom: str, adresse: str, code_postal, telephone, entreprise: str = ""
     ):
+        """
+        Adds a new client to the client list if the client's name is unique.
+
+        Args:
+            nom (str): The name of the client.
+            adresse (str): The address of the client.
+            code_postal (str): The postal code of the client.
+            telephone (str): The phone number of the client.
+            entreprise (str, optional): The company name of the client. Defaults to "".
+
+        Returns:
+            bool: True if the client was added successfully, False if a client with the same name already exists.
+        """
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         # Vérifier si un client avec le même nom existe déjà (comparaison en majuscules)
         for client in clients:
-            print("test", client["Nom"].upper().strip(), nom.upper().strip())
             if client["Nom"].upper().strip() == nom.upper().strip():
-                print("Equal", client["Nom"].upper().strip(), nom.upper().strip())
                 return False
 
         # Si le nom est unique, on ajoute le client
@@ -30,17 +41,24 @@ class ClientManager:
                 "Entreprise": entreprise.replace(" ", ""),
             }
         )
-        print("clients before write", clients)
         self.csv_manager.write_csv(
             FICHIER_CLIENTS,
             clients,
             en_tetes=["Nom", "Adresse", "Code Postal", "Téléphone", "Entreprise"],
         )
-        print("clients after write", clients)
         return True
 
     def get_client(self, name: str):
-        """Retourne le client dont le nom correspond à 'name' ou None si non trouvé."""
+        """
+        Retrieves a client by name.
+
+        Args:
+            name (str): The name of the client to retrieve.
+
+        Returns:
+            dict or None: A dictionary containing the client's information if found,
+                          otherwise None.
+        """
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         for client in clients:
             if client["Nom"].strip() == name.strip():
@@ -89,8 +107,13 @@ class ClientManager:
 
     def delete_client(self, name: str):
         """
-        Supprime le client dont le nom correspond à name.
-        Si aucun client n'est supprimé, une exception est levée.
+        Deletes the client whose name matches the given name.
+
+        Args:
+            name (str): The name of the client to delete.
+
+        Raises:
+            Exception: If no client is found with the given name.
         """
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         new_clients = [
