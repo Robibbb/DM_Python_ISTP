@@ -95,11 +95,8 @@ class Main:
 
     def on_rechercher_client(self, e):
         """Recherche un client à partir de son nom."""
-        print("Recherche du client...")
         nom = self.devis_nom_client.value.strip()
-        print("Nom:", nom)
         if not nom:
-            print("Nom vide.")
             self.page.snack_bar = ft.SnackBar(
                 ft.Text("Veuillez entrer un nom de client.")
             )
@@ -107,30 +104,28 @@ class Main:
             self.page.update()
             return
 
-        # Lecture du CSV via CSVManager (adaptez selon votre implémentation)
+        # Lecture du CSV via CSVManager
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
-        print("Clients:", clients)
         found = None
         for client in clients:
-            print(f"Comparaison avec {client['Nom']}")
             if client["Nom"].strip().upper() == nom.upper():
                 found = client
                 break
 
         if found:
-            print("Client trouvé:", found)
+            # Affiche les détails du client et rend la saisie du devis visible
             self.devis_detail_client.value = (
                 f"Adresse: {found['Adresse']}\n"
                 f"Code Postal: {found['Code Postal']}\n"
                 f"Téléphone: {found['Téléphone']}"
             )
+            self.devis_form_container.visible = True
         else:
-            print("Client non trouvé.")
             self.devis_detail_client.value = ""
+            self.devis_form_container.visible = False
             self.page.snack_bar = ft.SnackBar(
                 ft.Text(
-                    "Le client n'est pas encore enregistré. "
-                    "Veuillez l'enregistrer au préalable."
+                    "Le client n'est pas encore enregistré. Veuillez l'enregistrer au préalable."
                 )
             )
             self.page.snack_bar.open = True
@@ -224,8 +219,7 @@ class Main:
             ],
             alignment="center",
             horizontal_alignment="center",
-            spacing=20,
-            visible=True,
+            spacing=10,
         )
 
     def _build_auth_view(self) -> ft.Column:
@@ -245,8 +239,7 @@ class Main:
             ],
             alignment="center",
             horizontal_alignment="center",
-            spacing=20,
-            visible=False,
+            spacing=10,
         )
 
     def _build_client_view(self) -> ft.Column:
@@ -275,9 +268,24 @@ class Main:
 
     def _build_devis_view(self) -> ft.Column:
         """Construit la vue pour la gestion des devis."""
+        # --- Partie recherche du client ---
         self.devis_nom_client = ft.TextField(label="Nom Client", width=300)
         self.devis_detail_client = ft.Text("", color="blue")
 
+        client_search_container = ft.Column(
+            [
+                self.devis_nom_client,
+                ft.ElevatedButton(
+                    "Rechercher Client", on_click=self.on_rechercher_client
+                ),
+                self.devis_detail_client,
+            ],
+            spacing=10,
+            alignment="center",
+            horizontal_alignment="center",
+        )
+
+        # --- Partie création du devis ---
         self.metal_dropdown = ft.Dropdown(
             label="Métal",
             options=[
@@ -287,7 +295,6 @@ class Main:
             value=list(METAL_PROPERTIES.keys())[0],
             width=300,
         )
-
         self.devis_quantite = ft.TextField(label="Quantité à découper (mm)", width=300)
         self.forme_dropdown = ft.Dropdown(
             label="Forme de découpe",
@@ -298,19 +305,15 @@ class Main:
             value="Droite",
             width=300,
         )
-
         self.devis_remise = ft.TextField(label="Remise client (%)", width=300)
         self.devis_message = ft.Text()
+
+        # L'image de l'histogramme sera initialement masquée
         self.histogram_image = ft.Image(src="", width=400, visible=False)
 
-        return ft.Column(
+        # Colonne pour les caractéristiques de création du devis (à gauche)
+        devis_characteristics = ft.Column(
             [
-                ft.Text("Gestion des Devis", size=20),
-                self.devis_nom_client,
-                ft.ElevatedButton(
-                    "Rechercher Client", on_click=self.on_rechercher_client
-                ),
-                self.devis_detail_client,
                 self.metal_dropdown,
                 self.devis_quantite,
                 self.forme_dropdown,
@@ -319,8 +322,41 @@ class Main:
                 ft.ElevatedButton(
                     "Générer Histogramme", on_click=self.on_generer_histogramme
                 ),
-                self.histogram_image,
                 self.devis_message,
+            ],
+            spacing=10,
+            alignment="center",
+            horizontal_alignment="center",
+        )
+
+        # Colonne pour l'histogramme (à droite)
+        histogram_container = ft.Column(
+            [
+                self.histogram_image,
+            ],
+            alignment="center",
+            horizontal_alignment="center",
+        )
+
+        # Row qui place côte à côte les caractéristiques et l'histogramme
+        devis_form_container = ft.Row(
+            [
+                devis_characteristics,
+                histogram_container,
+            ],
+            spacing=20,
+            alignment="center",
+        )
+        # La saisie complète du devis (Row) reste masquée tant que le client n'est pas trouvé
+        devis_form_container.visible = False
+        # Gardez une référence pour pouvoir modifier sa visibilité depuis l'event handler
+        self.devis_form_container = devis_form_container
+
+        return ft.Column(
+            [
+                ft.Text("Gestion des Devis", size=20),
+                client_search_container,
+                devis_form_container,
             ],
             spacing=10,
             alignment="center",
@@ -367,14 +403,70 @@ class Main:
         """Point d'entrée de l'application Flet."""
         self.page = page
         page.title = "CutSharp - Gestion des Clients et Devis"
-        page.window_width = 600
-        page.window_height = 700
+
+        # Définir la taille de la fenêtre en 16:9
+        page.window_width = 1280
+        page.window_height = 720
 
         # Construit les différentes vues
         self.login_view = self._build_login_view()
         self.auth_view = self._build_auth_view()
         self.main_view = self._build_main_view()
+        ################################# Ajout de l'image de fond #################################
+        # # Conteneur principal avec image de fond
+        # background_image_path = (
+        #     "assets/background.PNG"  # Remplacez par le chemin de votre image
+        # )
+        # background_image = ft.Image(
+        #     src=background_image_path,
+        #     fit="cover",
+        #     width=page.window_width,
+        #     height=page.window_height,
+        # )
 
+        # # Conteneur pour le contenu de l'application
+        # content_container = ft.Container(
+        #     content=ft.Column(
+        #         [
+        #             self.login_view,
+        #             self.auth_view,
+        #             self.main_view,
+        #         ],
+        #         alignment="center",
+        #         horizontal_alignment="center",
+        #         spacing=20,
+        #     ),
+        #     expand=True,
+        # )
+
+        # # Conteneur principal combinant l'image de fond et le contenu
+        # main_container = ft.Stack(
+        #     [
+        #         background_image,
+        #         content_container,
+        #     ],
+        #     expand=True,
+        # )
+
+        # # Ajout du conteneur principal sur la page
+        # page.add(main_container)
+        content_container = ft.Container(
+            content=ft.Column(
+                [
+                    self.login_view,
+                    self.auth_view,
+                    self.main_view,
+                ],
+                alignment="center",
+                horizontal_alignment="center",
+                spacing=20,
+            ),
+            expand=True,
+            bgcolor=ft.colors.with_opacity(0.5, "#deeeed"),  # background color
+        )
+
+        # Ajout du conteneur principal sur la page
+        page.add(content_container)
         # Ajout des vues sur la page
         page.add(self.login_view, self.auth_view, self.main_view)
 

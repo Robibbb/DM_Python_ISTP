@@ -1,0 +1,14 @@
+-Bloquer la création de devis tant que aucun client n'est indiqué
+
+-Avoir une dimension définie (pour intégrer une image en fond)
+	-Modifier le positionnemment de l'histogramme pour que ça rentre
+
+-Centrer intro et login
+
+-Gestion client, ajouter un bouton login administrateur pour modifier/supprimer des clients (Les 
+clients ne peuvent pas modifier leurs propres infos, ils doivent en faire la demande).
+
+-Ajouter entreprise dans la gestion client
+
+-Ajouter un bouton reset pour la création de devis
+
