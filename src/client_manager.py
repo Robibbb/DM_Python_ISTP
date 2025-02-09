@@ -15,7 +15,9 @@ class ClientManager:
     def __init__(self, csv_manager: CSVManager):
         self.csv_manager = csv_manager
 
-    def add_client(self, nom, adresse, code_postal, telephone):
+    def add_client(
+        self, nom: str, adresse: str, code_postal, telephone, entreprise: str = ""
+    ):
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         clients.append(
             {
@@ -23,12 +25,13 @@ class ClientManager:
                 "Adresse": adresse.upper(),
                 "Code Postal": code_postal,
                 "Téléphone": telephone.replace(" ", ""),
+                "Entreprise": entreprise.replace(" ", ""),
             }
         )
         self.csv_manager.ecrire_csv(
             FICHIER_CLIENTS,
             clients,
-            en_tetes=["Nom", "Adresse", "Code Postal", "Téléphone"],
+            en_tetes=["Nom", "Adresse", "Code Postal", "Téléphone", "Entreprise"],
         )
 
     def get_client(self):

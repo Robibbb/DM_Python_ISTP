@@ -41,7 +41,8 @@ class Main:
         self.client_adresse = None
         self.client_code_postal = None
         self.client_telephone = None
-        self.client_message = None
+        self.client_telephone = None
+        self.client_entreprise = None
 
         # Champs pour la vue Devis
         self.devis_nom_client = None
@@ -73,6 +74,7 @@ class Main:
                 self.client_adresse.value,
                 self.client_code_postal.value,
                 self.client_telephone.value,
+                self.client_entreprise.value,
             )
             self.client_message.value = "Client ajouté avec succès !"
 
@@ -84,6 +86,7 @@ class Main:
             self.client_adresse.value = ""
             self.client_code_postal.value = ""
             self.client_telephone.value = ""
+            self.client_entreprise.value = ""
             self.page.snack_bar = ft.SnackBar(ft.Text("Client ajouté avec succès !"))
             self.page.snack_bar.open = True
             self.page.update()
@@ -249,6 +252,7 @@ class Main:
         self.client_adresse = ft.TextField(label="Adresse", width=300)
         self.client_code_postal = ft.TextField(label="Code Postal", width=300)
         self.client_telephone = ft.TextField(label="Téléphone", width=300)
+        self.client_entreprise = ft.TextField(label="Entreprise", width=300)
         self.client_message = ft.Text()
 
         return ft.Column(
@@ -258,6 +262,7 @@ class Main:
                 self.client_adresse,
                 self.client_code_postal,
                 self.client_telephone,
+                self.client_entreprise,
                 ft.ElevatedButton("Ajouter Client", on_click=self.on_ajouter_client),
                 self.client_message,
             ],
@@ -265,6 +270,15 @@ class Main:
             alignment="center",
             horizontal_alignment="center",
         )
+
+    def on_reset_devis(self, e):
+        """Réinitialise les champs de saisie pour la création de devis."""
+        self.metal_dropdown.value = list(METAL_PROPERTIES.keys())[0]
+        self.devis_quantite.value = ""
+        self.forme_dropdown.value = "Droite"
+        self.devis_remise.value = ""
+        self.devis_message.value = ""
+        self.page.update()
 
     def _build_devis_view(self) -> ft.Column:
         """Construit la vue pour la gestion des devis."""
@@ -281,8 +295,8 @@ class Main:
                 self.devis_detail_client,
             ],
             spacing=10,
-            alignment="center",
-            horizontal_alignment="center",
+            alignment="start",
+            horizontal_alignment="start",
         )
 
         # --- Partie création du devis ---
@@ -308,10 +322,6 @@ class Main:
         self.devis_remise = ft.TextField(label="Remise client (%)", width=300)
         self.devis_message = ft.Text()
 
-        # L'image de l'histogramme sera initialement masquée
-        self.histogram_image = ft.Image(src="", width=400, visible=False)
-
-        # Colonne pour les caractéristiques de création du devis (à gauche)
         devis_characteristics = ft.Column(
             [
                 self.metal_dropdown,
@@ -322,43 +332,53 @@ class Main:
                 ft.ElevatedButton(
                     "Générer Histogramme", on_click=self.on_generer_histogramme
                 ),
+                ft.ElevatedButton(
+                    "Reset", on_click=self.on_reset_devis
+                ),  # Bouton Reset
                 self.devis_message,
             ],
             spacing=10,
-            alignment="center",
-            horizontal_alignment="center",
+            alignment="start",
+            horizontal_alignment="start",
         )
 
-        # Colonne pour l'histogramme (à droite)
-        histogram_container = ft.Column(
-            [
-                self.histogram_image,
-            ],
-            alignment="center",
-            horizontal_alignment="center",
+        # Regrouper la recherche du client et le formulaire de devis dans une même colonne (côté gauche)
+        # Le formulaire de devis reste masqué tant que le client n'est pas trouvé.
+        self.devis_form_container = ft.Container(
+            content=devis_characteristics, visible=False
         )
-
-        # Row qui place côte à côte les caractéristiques et l'histogramme
-        devis_form_container = ft.Row(
+        left_side = ft.Column(
             [
-                devis_characteristics,
-                histogram_container,
+                client_search_container,
+                self.devis_form_container,
             ],
             spacing=20,
-            alignment="center",
+            alignment="start",
+            horizontal_alignment="start",
         )
-        # La saisie complète du devis (Row) reste masquée tant que le client n'est pas trouvé
-        devis_form_container.visible = False
-        # Gardez une référence pour pouvoir modifier sa visibilité depuis l'event handler
-        self.devis_form_container = devis_form_container
+
+        # --- Partie Histogramme (affichée à droite) ---
+        self.histogram_image = ft.Image(src="", width=400, visible=False)
+        right_side = ft.Column(
+            [self.histogram_image],
+            alignment="center",
+            horizontal_alignment="center",
+        )
+
+        # Disposition principale : deux colonnes côte à côte
+        main_content = ft.Row(
+            [left_side, right_side],
+            spacing=20,
+            alignment="center",
+            expand=True,
+        )
 
         return ft.Column(
             [
                 ft.Text("Gestion des Devis", size=20),
-                client_search_container,
-                devis_form_container,
+                main_content,
             ],
-            spacing=10,
+            spacing=20,
             alignment="center",
             horizontal_alignment="center",
         )

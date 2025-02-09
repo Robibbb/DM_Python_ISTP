@@ -8,7 +8,7 @@
 -Gestion client, ajouter un bouton login administrateur pour modifier/supprimer des clients (Les 
 clients ne peuvent pas modifier leurs propres infos, ils doivent en faire la demande).
 
--Ajouter entreprise dans la gestion client
+-Ajouter entreprise dans la gestion client #DONE#
 
--Ajouter un bouton reset pour la création de devis
+-Ajouter un bouton reset pour la création de devis #DONE#
 
