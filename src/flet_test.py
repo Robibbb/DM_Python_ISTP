@@ -30,7 +30,6 @@ class Main:
         self.histogramme_manager = HistogrammeManager(csv_manager=self.csv_manager)
 
         # Les champs et contrôles seront initialisés dans self.main(...)
-        # afin d'être accessibles dans les méthodes de rappel (event handlers).
         self.page = None
 
         # Champs pour la vue Clients
@@ -39,6 +38,7 @@ class Main:
         self.client_code_postal = None
         self.client_telephone = None
         self.client_entreprise = None
+        self.client_message = None
 
         # Champs pour la vue Devis
         self.devis_nom_client = None
@@ -49,6 +49,7 @@ class Main:
         self.devis_remise = None
         self.devis_message = None
         self.histogram_image = None
+        self.devis_form_container = None
 
         # Conteneur principal pour alterner entre Clients et Devis
         self.content_container = None
@@ -57,11 +58,6 @@ class Main:
         self.login_view = None
         self.auth_view = None
         self.main_view = None
-        self.admin_view = None  # <-- Nouvelle vue pour l'admin
-
-        # Pour la gestion d'un accès admin
-        self.admin_username = None
-        self.admin_password = None
 
         # Éléments d'authentification
         self.username_field = None
@@ -70,6 +66,9 @@ class Main:
         # Boutons de modification/suppression (admin)
         self.modify_button = None
         self.delete_button = None
+
+        # Pour savoir si on est admin ou pas (optionnel)
+        self.is_admin = False
 
     # ----------------------------------------------------------------
     # Méthodes de rappel (event handlers)
@@ -118,7 +117,6 @@ class Main:
             self.page.update()
             return
 
-        # Lecture du CSV via CSVManager
         clients = self.csv_manager.read_csv(FICHIER_CLIENTS)
         found = None
         for client in clients:
@@ -127,7 +125,6 @@ class Main:
                 break
 
         if found:
-            # Affiche les détails du client et rend la saisie du devis visible
             self.devis_detail_client.value = (
                 f"Adresse: {found['Adresse']}\n"
                 f"Code Postal: {found['Code Postal']}\n"
@@ -154,7 +151,6 @@ class Main:
             forme = self.forme_dropdown.value
             remise = float(self.devis_remise.value)
 
-            # Appel de la méthode en fixant la marge à 50 % (si c'est le choix)
             devis_data = self.devis_manager.ajouter_devis(
                 self.devis_nom_client.value, metal, quantite_ml, forme, remise
             )
@@ -166,7 +162,6 @@ class Main:
                 f"PDF généré: {pdf_file}"
             )
 
-            # Notification via SnackBar
             self.page.snack_bar = ft.SnackBar(ft.Text("Devis ajouté et PDF généré."))
             self.page.snack_bar.open = True
             self.page.update()
@@ -216,34 +211,36 @@ class Main:
         self.page.update()
 
     def on_login_admin(self, e):
-        """
-        Au lieu d'ouvrir uniquement une AlertDialog, on bascule ici
-        vers la vue d'authentification pour l'admin.
-        """
+        """Redirige vers la vue d'authentification."""
         self.switch_view("auth")
 
     def validate_auth(self, e):
         """
-        Valide les identifiants de connexion.
-        - Si vides => vue main
-        - Si admin/password => vue admin
+        Valide les identifiants.
+        - Si vides => utilisateur simple => vue main
+        - Si admin/password => admin => vue main + bouton suppr visible
         - Sinon => erreur
         """
         user = self.username_field.value
         pwd = self.password_field.value
 
         if user == "" and pwd == "":
-            # Utilisateur standard (vide dans cet exemple)
+            # Utilisateur standard
+            self.is_admin = False
             self.switch_view("main")
+            print("Après login user normal, is_admin =", self.is_admin)
         elif user == "1" and pwd == "1":
-            # Identifiants Admin corrects
-            self.switch_view("admin")  # On bascule sur la vue admin
+            # Admin
+            self.is_admin = True
+            self.switch_view("main")
+            print("Après login admin, is_admin =", self.is_admin)  # <-- ICI
+            # self.modify_button.visible = True  # si besoin
         else:
-            # Erreur d'authentification
             self.page.snack_bar = ft.SnackBar(
                 ft.Text("Nom d'utilisateur ou mot de passe incorrect")
             )
             self.page.snack_bar.open = True
+
         self.page.update()
 
     # ----------------------------------------------------------------
@@ -251,10 +248,10 @@ class Main:
     # ----------------------------------------------------------------
 
     def _build_login_view(self) -> ft.Column:
-        """Construit la vue de bienvenue (login)."""
+        """Vue de bienvenue (login)."""
         login_button = ft.ElevatedButton(
             text="Se connecter",
-            on_click=lambda e: self.switch_view("auth"),  # Vue d'authentification
+            on_click=lambda e: self.switch_view("auth"),
         )
         return ft.Column(
             [
@@ -267,7 +264,7 @@ class Main:
         )
 
     def _build_auth_view(self) -> ft.Column:
-        """Construit la vue d'authentification (saisie identifiants)."""
+        """Vue d'authentification (saisie identifiants)."""
         self.username_field = ft.TextField(label="Nom d'utilisateur", width=300)
         self.password_field = ft.TextField(
             label="Mot de passe", password=True, can_reveal_password=True, width=300
@@ -287,27 +284,35 @@ class Main:
         )
 
     def _build_client_view(self) -> ft.Column:
-        """Construit la vue pour la gestion des clients."""
-        # On (ré)initialise les champs ici
-        self.client_nom = ft.TextField(label="Nom", width=300)
-        self.client_adresse = ft.TextField(label="Adresse", width=300)
-        self.client_code_postal = ft.TextField(label="Code Postal", width=300)
-        self.client_telephone = ft.TextField(label="Téléphone", width=300)
+        """Vue pour la gestion des clients."""
+        self.client_nom = ft.TextField(label="Nom *", width=300)
+        self.client_adresse = ft.TextField(label="Adresse *", width=300)
+        self.client_code_postal = ft.TextField(label="Code Postal *", width=300)
+        self.client_telephone = ft.TextField(label="Téléphone *", width=300)
         self.client_entreprise = ft.TextField(label="Entreprise", width=300)
         self.client_message = ft.Text()
 
-        # Boutons pour modifier et supprimer des clients (visibles uniquement pour l'administrateur)
-        # Par défaut, invisibles
         self.modify_button = ft.ElevatedButton(
             "Modifier Client", on_click=self.on_modifier_client, visible=False
         )
         self.delete_button = ft.ElevatedButton(
             "Supprimer Client", on_click=self.on_supprimer_client, visible=False
         )
-
         return ft.Column(
             [
                 ft.Text("Gestion des Clients", size=20),
+                ft.Text("Ajouter un nouveau client", size=16),
+                (
+                    ft.Text("Modifier Client", size=16)
+                    if self.is_admin
+                    else ft.Container()
+                ),  # si admin
+                (
+                    ft.Text("Supprimer Client", size=16)
+                    if self.is_admin
+                    else ft.Container()
+                ),  # si admin
+                ft.Text("Les champs marqués d'une * sont obligatoires", color="red"),
                 self.client_nom,
                 self.client_adresse,
                 self.client_code_postal,
@@ -315,9 +320,6 @@ class Main:
                 self.client_entreprise,
                 ft.ElevatedButton("Ajouter Client", on_click=self.on_ajouter_client),
                 self.client_message,
-                ft.ElevatedButton(
-                    "Login Administrateur", on_click=self.on_login_admin
-                ),  # Bouton Login Administrateur
                 self.modify_button,
                 self.delete_button,
             ],
@@ -327,8 +329,7 @@ class Main:
         )
 
     def _build_devis_view(self) -> ft.Column:
-        """Construit la vue pour la gestion des devis."""
-        # --- Partie recherche du client ---
+        """Vue pour la gestion des devis."""
         self.devis_nom_client = ft.TextField(label="Nom Client", width=300)
         self.devis_detail_client = ft.Text("", color="blue")
 
@@ -341,11 +342,10 @@ class Main:
                 self.devis_detail_client,
             ],
             spacing=10,
-            alignment="center",
-            horizontal_alignment="center",
+            alignment="start",
+            horizontal_alignment="start",
         )
 
-        # --- Partie création du devis ---
         self.metal_dropdown = ft.Dropdown(
             label="Métal",
             options=[
@@ -378,9 +378,7 @@ class Main:
                 ft.ElevatedButton(
                     "Générer Histogramme", on_click=self.on_generer_histogramme
                 ),
-                ft.ElevatedButton(
-                    "Reset", on_click=self.on_reset_devis
-                ),  # Bouton Reset
+                ft.ElevatedButton("Reset", on_click=self.on_reset_devis),
                 self.devis_message,
             ],
             spacing=10,
@@ -388,8 +386,6 @@ class Main:
             horizontal_alignment="center",
         )
 
-        # Regrouper la recherche du client et le formulaire de devis dans une même colonne (côté gauche)
-        # Le formulaire de devis reste masqué tant que le client n'est pas trouvé.
         self.devis_form_container = ft.Container(
             content=devis_characteristics, visible=False
         )
@@ -399,11 +395,10 @@ class Main:
                 self.devis_form_container,
             ],
             spacing=20,
-            alignment="center",
-            horizontal_alignment="center",
+            alignment="start",
+            horizontal_alignment="start",
         )
 
-        # --- Partie Histogramme (affichée à droite) ---
         self.histogram_image = ft.Image(src="", width=400, visible=False)
         right_side = ft.Column(
             [self.histogram_image],
@@ -411,7 +406,6 @@ class Main:
             horizontal_alignment="center",
         )
 
-        # Disposition principale : deux colonnes côte à côte
         main_content = ft.Row(
             [left_side, right_side],
             spacing=20,
@@ -429,15 +423,24 @@ class Main:
             horizontal_alignment="center",
         )
 
-    def _build_main_menu(self) -> ft.Row:
-        """Construit le menu principal permettant de basculer entre Clients/Devis."""
+    # 1) Construire le header (barre de navigation)
+    def _build_header(self) -> ft.Row:
+        """
+        Header avec:
+          - Bouton Clients
+          - Bouton Devis
+          - Bouton Logout => retour à la vue auth
+        """
         return ft.Row(
             [
                 ft.ElevatedButton(
-                    "Gestion des Clients", on_click=lambda e: self.switch_tab("clients")
+                    "Gestion Clients", on_click=lambda e: self.switch_tab("clients")
                 ),
                 ft.ElevatedButton(
-                    "Gestion des Devis", on_click=lambda e: self.switch_tab("devis")
+                    "Gestion Devis", on_click=lambda e: self.switch_tab("devis")
+                ),
+                ft.ElevatedButton(
+                    "Logout", on_click=lambda e: self.switch_view("auth")
                 ),
             ],
             alignment="center",
@@ -445,48 +448,29 @@ class Main:
         )
 
     def _build_main_view(self) -> ft.Column:
-        """
-        Construit la vue principale (avec les onglets Clients / Devis).
-        Par défaut, on commence par la vue clients.
-        """
-        # Conteneur qui affichera soit la client_view soit la devis_view
+        """Vue principale (avec onglets Clients / Devis)."""
         self.content_container = ft.Container(content=self._build_client_view())
 
-        main_menu = self._build_main_menu()
+        # 2) On place le header tout en haut
+        header = self._build_header()
 
         return ft.Column(
             [
-                main_menu,
-                self.content_container,
+                header,  # Ajout du header
+                self.content_container,  # Zone où on bascule Clients / Devis
             ],
             spacing=20,
             alignment="center",
             horizontal_alignment="center",
-            visible=False,  # Masqué par défaut, jusqu'au switch_view("main")
-        )
-
-    def _build_admin_view(self) -> ft.Column:
-        """
-        Construit la vue dédiée à l'administrateur.
-        Pour le moment, elle affiche seulement "ADMIN VIEW".
-        """
-        return ft.Column(
-            [
-                ft.Text("ADMIN VIEW", size=32, weight=ft.FontWeight.BOLD),
-                ft.Text("Bienvenue dans la vue d'administration !"),
-            ],
-            alignment="center",
-            horizontal_alignment="center",
-            spacing=20,
-            visible=False,  # On contrôle la visibilité via switch_view
+            visible=False,  # sera affiché après switch_view("main")
         )
 
     # ----------------------------------------------------------------
-    # Méthodes utilitaires pour changer de "vue" (login, auth, main, admin)
+    # Méthodes pour changer de vue ou d'onglet
     # ----------------------------------------------------------------
 
     def switch_tab(self, tab: str):
-        """Permet de basculer entre la gestion des Clients et la gestion des Devis."""
+        """Bascule entre la gestion des Clients et la gestion des Devis."""
         if tab == "clients":
             self.content_container.content = self._build_client_view()
         else:
@@ -494,28 +478,28 @@ class Main:
         self.page.update()
 
     def switch_view(self, view_name: str):
-        """
-        Permet de changer de vue parmi:
-          - "login"
-          - "auth"
-          - "main"
-          - "admin"
-        """
+        """Change la vue visible: login, auth, main."""
         self.login_view.visible = view_name == "login"
         self.auth_view.visible = view_name == "auth"
         self.main_view.visible = view_name == "main"
-        self.admin_view.visible = view_name == "admin"
+
+        if view_name == "main":
+            self.content_container.content = (
+                self._build_client_view()
+            )  # Reconstruire la vue des clients
+
         self.page.update()
 
     # ----------------------------------------------------------------
-    # Méthode main pour Flet (point d'entrée)
+    # Méthode main (point d'entrée Flet)
     # ----------------------------------------------------------------
+
     def main(self, page: ft.Page):
-        """Point d'entrée de l'application Flet."""
+        """Point d'entrée de l'application."""
         self.page = page
         page.title = "CutSharp - Gestion des Clients et Devis"
 
-        # Définir la taille de la fenêtre en 16:9
+        # Dimension fenêtre
         page.window_width = 1280
         page.window_height = 720
 
@@ -523,32 +507,30 @@ class Main:
         self.login_view = self._build_login_view()
         self.auth_view = self._build_auth_view()
         self.main_view = self._build_main_view()
-        self.admin_view = self._build_admin_view()  # Vue admin
 
-        # On ajoute les quatre vues (login/auth/main/admin) dans un Container global
+        # On met les trois vues dans un conteneur
         content_container = ft.Container(
             content=ft.Column(
                 [
                     self.login_view,
                     self.auth_view,
                     self.main_view,
-                    self.admin_view,  # On l'ajoute aussi
                 ],
                 alignment="center",
                 horizontal_alignment="center",
                 spacing=20,
             ),
             expand=True,
-            bgcolor=ft.colors.with_opacity(0.5, "#deeeed"),  # Couleur de fond
+            bgcolor=ft.colors.with_opacity(0.5, "#deeeed"),
         )
 
         page.add(content_container)
 
-        # Affiche la vue de login par défaut
+        # Vue login par défaut
         self.switch_view("login")
 
 
-# Point d'entrée Flet
+# Lance l'app Flet
 if __name__ == "__main__":
     main_object = Main()
     ft.app(target=main_object.main)
