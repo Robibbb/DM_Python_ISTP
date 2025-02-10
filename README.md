@@ -29,6 +29,11 @@ Ce projet est organisé de la manière suivante :
     cd src && ./flet_test.py
     ```
 
+3. Lancer Streamlit afin d'avoir l'histogramme :
+    ```sh
+    streamlit run streamhisto.py
+    ```
+
 ## Utilisation
 
 - Utilisez l'interface utilisateur pour gérer les clients et les devis.
@@ -49,3 +54,4 @@ Ce projet est organisé de la manière suivante :
 - [datas]() : Contient les fichiers de données CSV.
 
 N'hésitez pas à consulter chaque fichier pour plus de détails sur son contenu et son utilisation.
+
