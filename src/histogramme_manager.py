@@ -1,8 +1,9 @@
-""" Module containing the HistogrammeManager class. """
+""" Module contenant la classe HistogrammeManager pour le fichier devis.csv. """
 
 from datetime import datetime
-
 from matplotlib import pyplot as plt
+import pandas as pd
+import os
 
 from constants import FICHIER_DEVIS
 from csv_manager import CSVManager
@@ -29,13 +30,10 @@ class HistogrammeManager:
         devis_list = self.csv_manager.read_csv(FICHIER_DEVIS)
         try:
             montants = [
-                float(devis["Prix Total"])
-                for devis in devis_list
-                if "Prix Total" in devis and devis["Prix Total"] not in (None, "")
+                float(ligne.split(",")[5]) for d in devis_list for ligne in d.values()
             ]
         except KeyError:
             return None
-
         intervalles = ["0-1000", "1000-5000", "5000-10000", ">10000"]
         comptes = [
             sum(1 for montant in montants if 0 <= montant <= 1000),
