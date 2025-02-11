@@ -124,20 +124,13 @@ class Main:
 
     def on_rechercher_client(self, e=None):
         """
-        Handles the search for a client by their name.
-        This method retrieves the client's name from the input field, searches for the client
-        in the CSV file, and updates the UI with the client's details if found. If the client
-        is not found, it displays a message indicating that the client needs to be registered.
-        Args:
-            e: The event object (not used in this method).
-        Returns:
-            None
+        Recherche un client par nom. 
+        Si le client est trouvé dans clients.csv, affiche ses informations,
+        rend visible le formulaire de devis et charge le Dropdown des devis.
         """
         nom = self.devis_nom_client.value.strip()
         if not nom:
-            self.page.snack_bar = ft.SnackBar(
-                ft.Text("Veuillez entrer un nom de client.")
-            )
+            self.page.snack_bar = ft.SnackBar(ft.Text("Veuillez entrer un nom de client."))
             self.page.snack_bar.open = True
             self.page.update()
             return
@@ -153,20 +146,25 @@ class Main:
             self.devis_detail_client.value = (
                 f"Adresse: {found['Adresse']}\n"
                 f"Code Postal: {found['Code Postal']}\n"
-                f"Téléphone: {found['Téléphone']}"
+                f"Téléphone: {found['Téléphone']}\n"
+                f"Entreprise: {found['Entreprise']}"
             )
+            self.devis_detail_container.visible = True
             self.devis_form_container.visible = True
+            # Rendre visible le Dropdown et charger les devis correspondants
+            self.devis_dropdown.visible = True
+            self.load_devis_dropdown(found["Nom"])
         else:
+            self.devis_detail_container.visible = False
             self.devis_detail_client.value = ""
             self.devis_form_container.visible = False
+            self.devis_dropdown.visible = False
             self.page.snack_bar = ft.SnackBar(
-                ft.Text(
-                    "Le client n'est pas encore enregistré. "
-                    "Veuillez l'enregistrer au préalable."
-                )
+                ft.Text("Le client n'est pas encore enregistré. Veuillez l'enregistrer au préalable.")
             )
             self.page.snack_bar.open = True
         self.page.update()
+
 
     def on_ajouter_devis(self, e=None):
         """Gère l'ajout d'un devis et la génération du PDF."""
@@ -282,6 +280,31 @@ class Main:
             )
             self.page.snack_bar.open = True
         self.page.update()
+
+    def load_devis_dropdown(self, client_name: str):
+        """
+        Charge dans le Dropdown tous les devis enregistrés pour le client indiqué,
+        en filtrant le fichier devis.csv par le champ 'Nom Client'.
+        Chaque option est formatée avec la date, le métal et le prix total.
+        """
+        devis_list = self.csv_manager.read_csv("datas/inputs_csv/devis.csv")
+        # Filtrer les devis dont le nom client correspond (en ignorant la casse)
+        devis_for_client = [
+            devis for devis in devis_list 
+            if devis["Nom Client"].strip().upper() == client_name.strip().upper()
+        ]
+        options = []
+        for i, devis in enumerate(devis_for_client):
+            # Format d'affichage : Date - Métal - Prix Total €
+            option_text = f"{devis['Date']} - {devis['Matériau']} - {devis['Prix Total']} €"
+            options.append(ft.dropdown.Option(key=f"devis_{i}", text=option_text))
+        self.devis_dropdown.options = options
+        if options:
+            self.devis_dropdown.value = options[0].key  # sélection par défaut
+        else:
+            self.devis_dropdown.value = None
+        self.page.update()
+
 
     def clear_client_form(self, e=None):
         """Réinitialise le formulaire de saisie client."""
@@ -490,38 +513,55 @@ class Main:
 
     def _build_devis_view(self, e=None) -> ft.Column:
         """Vue pour la gestion des devis."""
+        # Champ pour saisir le nom du client
         self.devis_nom_client = ft.TextField(label="Nom Client", width=300)
+        
+        # Champ affichant les infos du client (Adresse, Code Postal, etc.)
         self.devis_detail_client = ft.Text("", color="blue")
-
+        
+        # Container encadrant le Text ci-dessus
+        self.devis_detail_container = ft.Container(
+            content=self.devis_detail_client,
+            border=ft.border.all(1, ft.colors.BLACK),
+            border_radius=5,
+            padding=10,
+            margin=ft.margin.only(top=10),
+            visible=False,
+        )
+        
+        # Création du Dropdown qui affichera la liste des devis du client
+        self.devis_dropdown = ft.Dropdown(
+            label="Liste des devis",
+            width=300,
+            visible=False  # Sera rendu visible après validation du client
+        )
+        
+        # Regroupement de la recherche client et du Dropdown
         client_search_container = ft.Column(
             [
                 self.devis_nom_client,
-                ft.ElevatedButton(
-                    "Rechercher Client", on_click=self.on_rechercher_client
-                ),
-                self.devis_detail_client,
+                ft.ElevatedButton("Rechercher Client", on_click=self.on_rechercher_client),
+                self.devis_detail_container,
+                self.devis_dropdown,  # Ajout du Dropdown ici
             ],
             spacing=10,
             alignment="start",
             horizontal_alignment="start",
         )
-
+        
+        # Champs pour créer un devis
         self.metal_dropdown = ft.Dropdown(
             label="Métal",
-            options=[
-                ft.dropdown.Option(key=metal, text=metal)
-                for metal in METAL_PROPERTIES.keys()
-            ],
+            options=[ft.dropdown.Option(key=metal, text=metal)
+                    for metal in METAL_PROPERTIES.keys()],
             value=list(METAL_PROPERTIES.keys())[0],
             width=300,
         )
         self.devis_quantite = ft.TextField(label="Quantité à découper (mm)", width=300)
         self.forme_dropdown = ft.Dropdown(
             label="Forme de découpe",
-            options=[
-                ft.dropdown.Option(key=forme, text=forme)
-                for forme in FORME_COEFFICIENT.keys()
-            ],
+            options=[ft.dropdown.Option(key=forme, text=forme)
+                    for forme in FORME_COEFFICIENT.keys()],
             value="Droite",
             width=300,
         )
@@ -535,9 +575,7 @@ class Main:
                 self.forme_dropdown,
                 self.devis_remise,
                 ft.ElevatedButton("Ajouter Devis", on_click=self.on_ajouter_devis),
-                ft.ElevatedButton(
-                    "Générer Histogramme", on_click=self.on_generer_histogramme
-                ),
+                ft.ElevatedButton("Générer Histogramme", on_click=self.on_generer_histogramme),
                 ft.ElevatedButton("Reset", on_click=self.on_reset_devis),
                 self.devis_message,
             ],
@@ -546,16 +584,21 @@ class Main:
             horizontal_alignment="center",
         )
 
+        # Conteneur du formulaire de devis (invisible tant qu'on n'a pas trouvé le client)
         self.devis_form_container = ft.Container(
-            content=devis_characteristics, visible=False
-        )
-        left_side = ft.Column(
-            [client_search_container, self.devis_form_container],
-            spacing=20,
-            alignment="start",
-            horizontal_alignment="start",
+            content=devis_characteristics, 
+            visible=False,
+            top=0,
+            left=350,
         )
 
+        left_side = ft.Stack(
+            [client_search_container, self.devis_form_container],
+            width=1000,
+            height=900,
+        )
+
+        # Image de l’histogramme (affichée à droite)
         self.histogram_image = ft.Image(src="", width=400, visible=False)
         right_side = ft.Column(
             [self.histogram_image],
@@ -571,11 +614,16 @@ class Main:
         )
 
         return ft.Column(
-            [ft.Text("Gestion des Devis", size=20), main_content],
+            [
+                ft.Text("Gestion des Devis", size=20),
+                main_content
+            ],
             spacing=20,
             alignment="center",
             horizontal_alignment="center",
         )
+
+
 
     def _build_header(self) -> ft.Row:
         """
