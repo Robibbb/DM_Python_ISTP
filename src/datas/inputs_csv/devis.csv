@@ -1,45 +1,4 @@
-Nom Client,Matériau,Longueur,Pièces,Marge,Remise,Prix Total,Date
-POPO,Fonte,100.0,2,2.0,0.0,138.375,2025-02-06
-CLEMENT,Fonte,300.0,1,1.0,0.0,128.79,2025-02-06
-CLEMENT,Fonte,300.0,1,1.0,0.0,128.79,2025-02-06
-CLEMENT,Fonte,300.0,1,1.0,0.0,128.79,2025-02-06
-EODJFIJ,Fonte,300.0,2,1.0,0.0,238.062,2025-02-06
-POO,Titane,100.0,2,1.0,0.0,69.156,2025-02-06
-POPO,Fonte,300.0,2,1.0,0.0,238.062,2025-02-06
-POPO,Fonte,100.0,2,1.0,0.0,92.25,2025-02-06
-POPO,Fonte,300.0,1,20.0,0.0,1352.295,2025-02-06
-POPO,Fonte,300.0,1,20.0,5.0,1346.295,2025-02-06
-POPO,Fonte,300.0,2,0.0,0.0,119.031,2025-02-06
-POPO,Fonte,300.0,2,0.0,0.0,119.031,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Acier"", ""Longueur"": 300.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 45.831}, {""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 8, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 734.553}, {""Mat\u00e9riau"": ""Cuivre"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 9, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 501.254}]",1281.638,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Acier"", ""Longueur"": 300.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 45.831}, {""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 8, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 734.553}, {""Mat\u00e9riau"": ""Cuivre"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 9, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 501.254}]",1281.638,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Acier"", ""Longueur"": 300.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 45.831}, {""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 8, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 734.553}, {""Mat\u00e9riau"": ""Cuivre"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 9, ""Marge"": 0.0, ""Remise"": 1.0, ""Prix Total"": 501.254}]",1281.638,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 500.0, ""Pi\u00e8ces"": 2, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 191.937}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 10, ""Marge"": 0.0, ""Remise"": 2.0, ""Prix Total"": 558.184}]",1035.778,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Inox"", ""Longueur"": 800.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 256.757}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 900.0, ""Pi\u00e8ces"": 5, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 285.657}, {""Mat\u00e9riau"": ""Acier"", ""Longueur"": 750.0, ""Pi\u00e8ces"": 5, ""Marge"": 6.0, ""Remise"": 5.0, ""Prix Total"": 1673.842}]",2216.2560000000003,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 600.0, ""Pi\u00e8ces"": 5, ""Marge"": 5.0, ""Remise"": 9.0, ""Prix Total"": 3314.988}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 800.0, ""Pi\u00e8ces"": 6, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 305.393}, {""Mat\u00e9riau"": ""Inox"", ""Longueur"": 750.0, ""Pi\u00e8ces"": 50, ""Marge"": 6.0, ""Remise"": 0.0, ""Prix Total"": 16065.375}]",19685.756,2025-02-06
-POPO,"[{""Mat\u00e9riau"": ""Fonte"", ""Longueur"": 300.0, ""Pi\u00e8ces"": 33, ""Marge"": 0.0, ""Remise"": 0.0, ""Prix Total"": 1812.747}]",1812.747,2025-02-06
-,Inox,100.0,2,10.0,10.0,233.511,2025-02-08
-CLEMENT,Acier,1000.0,Personnalisée,10.0,55.425,20.0,5.991,7,2025-02-08
-CLEMENT,Acier,1000.0,Droite,10.0,53.102,20.0,4.608,7,2025-02-08
-CLEMENT,Acier,1000.0,Droite,10.0,53.102,20.0,4.608,7,2025-02-08
-,Acier,1000.0,Droite,10.0,53.102,20.0,4.608,7,2025-02-09
-CLEMENT,Acier,100000.0,Droite,10.0,4145.96,2000.0,460.833,7,2025-02-09
-POPO,Acier,200000.0,Droite,0.0,8871.6,4000.0,921.667,7,2025-02-09
-POPO,Acier,200000.0,Droite,0.0,8871.6,4000.0,921.667,7,2025-02-09
-POPO,Acier,200000.0,Droite,0.0,8871.6,4000.0,921.667,7,2025-02-09
-POPO,Acier,200000.0,Droite,0.0,8871.6,4000.0,921.667,7,2025-02-09
-POPO,Acier,10.0,Droite,10.0,12.173,0.2,0.046,7,2025-02-09
-POPO,Acier,1000000.0,Droite,10.0,41353.76,20000.0,4608.333,7,2025-02-09
+Nom Client,Matériau,Quantité (mm),Forme,Remise (%),Prix Total,Coût Matériaux,Coût Découpe,Frais Frixes,Date
 POPO,Acier,100000000.0,Droite,0.0,4429512.6,2000000.0,460833.333,7,2025-02-09
 POPO,Acier,10000.0,Droite,10.0,425.18,200.0,46.083,7,2025-02-09
 POPO,Acier,1000.0,Droite,10.0,53.102,20.0,4.608,7,2025-02-09

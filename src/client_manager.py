@@ -46,7 +46,7 @@ class ClientManager:
                 "Adresse": adresse.upper(),
                 "Code Postal": code_postal,
                 "Téléphone": telephone.replace(" ", ""),
-                "Entreprise": entreprise.replace(" ", ""),
+                "Entreprise": entreprise.replace(" ", "").upper(),
             }
         )
         self.csv_manager.write_csv(
