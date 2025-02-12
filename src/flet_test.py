@@ -354,11 +354,13 @@ class Main:
             "Quantité (mm)", selected_devis.get("Quantité", "")
         )
         prix = selected_devis.get("Prix Total", "0")
+        forme = selected_devis.get("Forme", "")
 
         # Composer le texte à afficher
         self.devis_info_text.value = (
             f"Matériau : {material}\n"
-            f"Longueur : {quantite}\n"
+            f"Longueur : {quantite} mm\n"
+            f"Forme : {forme}\n"
             f"Prix total : {prix} €"
         )
 
@@ -492,9 +494,9 @@ class Main:
             spacing=10,
         )
 
-    def _build_client_view(self, e=None) -> ft.Column:
-        """Vue pour la gestion des clients."""
-        # --- Construction du formulaire de saisie ---
+    def _build_client_view(self, e=None) -> ft.Stack:
+        """Vue pour la gestion des clients avec positionnement absolu par top et left."""
+        # --- Création des champs de saisie et messages ---
         self.client_nom = ft.TextField(label="Nom *", width=300)
         self.client_adresse = ft.TextField(label="Adresse *", width=300)
         self.client_code_postal = ft.TextField(label="Code Postal *", width=300)
@@ -506,7 +508,7 @@ class Main:
             "Ajouter Client", on_click=self.on_ajouter_client
         )
 
-        # Boutons de modification/suppression (affichés en mode admin)
+        # --- Boutons de modification/suppression (affichés en mode admin) ---
         admin_buttons = []
         if self.is_admin:
             self.modify_button = ft.ElevatedButton(
@@ -517,66 +519,77 @@ class Main:
             )
             admin_buttons = [self.modify_button, self.delete_button]
 
-        form_column = ft.Column(
-            [
-                ft.Text("Gestion des Clients", size=20),
-                ft.Text("Ajouter un nouveau client", size=16),
-                ft.Text("Les champs marqués d'une * sont obligatoires", color="red"),
-                self.client_nom,
-                self.client_adresse,
-                self.client_code_postal,
-                self.client_telephone,
-                self.client_entreprise,
-                add_client_button,
-                self.client_message,
-            ]
-            + admin_buttons,
-            spacing=10,
-            alignment="center",
-            horizontal_alignment="center",
+        # --- Construction du Stack avec positionnement absolu ---
+        controls = [
+            # Titres et messages
+            ft.Container(
+                content=ft.Text("Gestion des Clients", size=20),
+                top=0,
+                left=455,
+                border=ft.border.all(2, ft.colors.RED),
+                padding=10,
+            ),
+            ft.Container(
+                content=ft.Text("Les champs marqués d'une * sont obligatoires", color="red"),
+                top=80,
+                left=410,
+            ),
+            # Champs de saisie du formulaire
+            ft.Container(content=self.client_nom, top=120, left=410),
+            ft.Container(content=self.client_adresse, top=170, left=410),
+            ft.Container(content=self.client_code_postal, top=220, left=410),
+            ft.Container(content=self.client_telephone, top=270, left=410),
+            ft.Container(content=self.client_entreprise, top=320, left=410),
+            # Bouton d'ajout et message d'information
+            ft.Container(content=add_client_button, top=370, left=410),
+            ft.Container(content=self.client_message, top=420, left=410),
+        ]
+
+        # --- Positionnement des éléments admin avec top et left ---
+        if self.is_admin:
+
+            # Affichage "Interface administrateur" encadré en rouge
+            controls.append(
+            ft.Container(
+                content=ft.Text("Interface administrateur", size=20),
+                top=50,
+                left=50,
+                border=ft.border.all(2, ft.colors.RED),
+                padding=10,
+            )
         )
 
-        # --- Si l'utilisateur est administrateur, afficher la liste déroulante ---
-        if self.is_admin:
-            # Création du Dropdown pour la liste des clients
+            # Dropdown "Liste des Clients"
             self.client_dropdown = ft.Dropdown(
                 label="Liste des Clients",
                 width=300,
                 on_change=self.on_client_dropdown_changed,
             )
             self.load_client_dropdown()
-            dropdown_column = ft.Column(
-                [self.client_dropdown],
-                spacing=10,
-                alignment="center",
-                horizontal_alignment="center",
+            controls.append(
+                ft.Container(content=self.client_dropdown, top=180, left=50)
             )
-            # Organiser la vue en deux colonnes :
-            # le formulaire à gauche et la liste déroulante à droite
-            return ft.Column(
-                [
-                    ft.Row(
-                        [
-                            form_column,
-                            ft.VerticalDivider(width=1),
-                            dropdown_column,
-                        ],
-                        spacing=20,
-                        alignment="center",
-                    )
-                ],
-                spacing=20,
-                alignment="center",
-                horizontal_alignment="center",
+            # Bouton "Modifier Client"
+            controls.append(
+                ft.Container(content=self.modify_button, top=140, left=50)
             )
-        return form_column
+            # Bouton "Supprimer Client"
+            controls.append(
+                ft.Container(content=self.delete_button, top=140, left=170)
+            )
 
-    def _build_devis_view(self, e=None) -> ft.Column:
+        # Le Stack définit la zone totale de la vue
+        return ft.Stack(controls=controls, width=800, height=600)
+
+
+
+    def _build_devis_view(self, e=None) -> ft.Stack:
         """
         Vue pour la gestion des devis, en positionnant certains éléments
         dans un Stack (top, left).
         - Bouton 'Générer Histogramme' retiré
         - Ajout d'un conteneur (self.devis_info_container) pour afficher les infos du devis sélectionné
+        - Le titre "Gestion des Devis" est placé dans un conteneur positionné absolument et encadré en rouge.
         """
 
         # 1) Champs pour saisir/rechercher le client
@@ -607,7 +620,7 @@ class Main:
             horizontal_alignment="start",
         )
 
-        # 4) Dropdown pour sélectionner un devis (on_change va appeler on_devis_dropdown_changed)
+        # 4) Dropdown pour sélectionner un devis
         self.devis_dropdown = ft.Dropdown(
             label="Liste des devis",
             width=300,
@@ -628,23 +641,19 @@ class Main:
         # 6) Champs pour créer un devis
         self.metal_dropdown = ft.Dropdown(
             label="Métal",
-            options=[
-                ft.dropdown.Option(key=m, text=m) for m in METAL_PROPERTIES.keys()
-            ],
+            options=[ft.dropdown.Option(key=m, text=m) for m in METAL_PROPERTIES.keys()],
             value=list(METAL_PROPERTIES.keys())[0],
             width=300,
         )
         self.devis_quantite = ft.TextField(label="Quantité à découper (mm)", width=300)
         self.forme_dropdown = ft.Dropdown(
             label="Forme de découpe",
-            options=[
-                ft.dropdown.Option(key=f, text=f) for f in FORME_COEFFICIENT.keys()
-            ],
+            options=[ft.dropdown.Option(key=f, text=f) for f in FORME_COEFFICIENT.keys()],
             value="Droite",
             width=300,
         )
         self.devis_remise = ft.TextField(label="Remise client (%)", width=300)
-        self.devis_message = ft.Text()
+        self.devis_message = ft.Text("")
 
         # 7) Colonne regroupant les champs du formulaire (sans le bouton histogramme)
         devis_characteristics = ft.Column(
@@ -668,53 +677,69 @@ class Main:
             visible=False,
         )
 
-        # 9) Nous plaçons le tout dans un Stack avec des positions (top, left).
-        main_stack = ft.Stack(
-            [
+        # 9) Stack regroupant les différents éléments avec positionnement absolu
+        inner_stack = ft.Stack(
+            controls=[
                 ft.Container(
                     content=client_search_container,
                     top=10,
-                    left=10,
+                    left=40,
                 ),
                 ft.Container(
                     content=self.devis_form_container,
                     top=10,
-                    left=350,
+                    left=380,
                 ),
                 ft.Container(
                     content=self.devis_dropdown,
                     top=10,
-                    left=700,
+                    left=730,
                 ),
                 ft.Container(
                     content=self.devis_info_container,
                     top=70,
-                    left=700,
+                    left=730,
                 ),
             ],
-            width=1000,
+            width=1200,
             height=900,
         )
 
-        # 10) On renvoie une Column qui contient le titre et le Stack
-        return ft.Column(
-            [
-                ft.Text("Gestion des Devis", size=20),
-                main_stack,
-            ],
-            spacing=20,
-            alignment="start",
-            horizontal_alignment="center",
+        # 10) Titre "Gestion des Devis" dans un conteneur positionné absolument et encadré en rouge.
+        title_container = ft.Container(
+            content=ft.Text("Gestion des Devis", size=20),
+            top=10,     # Modifiez cette valeur pour changer la position verticale du titre
+            left=40,    # Modifiez cette valeur pour changer la position horizontale du titre
+            border=ft.border.all(2, ft.colors.RED),
+            padding=10,
         )
 
-    def _build_header(self) -> ft.Row:
+        # 11) Retourne un Stack principal qui contient le titre et le reste de l'interface,
+        #      le inner_stack est positionné en dessous du titre.
+        return ft.Stack(
+            controls=[
+                title_container,
+                ft.Container(
+                    content=inner_stack,
+                    top=70,   # Décalage vertical pour placer le inner_stack sous le titre
+                    left=0,
+                ),
+            ],
+            width=1200,
+            height=1000,
+        )
+
+
+    def _build_header(self) -> ft.Container:
         """
         Header avec :
-          - Bouton Clients
-          - Bouton Devis
-          - Bouton Logout => retour à la vue auth
+        - Bouton Gestion Clients
+        - Bouton Gestion Devis
+        - Bouton Logout (retour à la vue auth)
+
+        Le header est positionné à 20px du haut et 20px de la gauche.
         """
-        return ft.Row(
+        header_row = ft.Row(
             [
                 ft.ElevatedButton(
                     "Gestion Clients", on_click=lambda e: self.switch_tab("clients")
@@ -726,21 +751,36 @@ class Main:
                     "Logout", on_click=lambda e: self.switch_view("auth")
                 ),
             ],
-            alignment="center",
             spacing=20,
+        )
+        # Ici, le Container est placé dans un Stack, et on lui attribue top et left
+        return ft.Container(
+            content=header_row,
+            top=20,
+            left=400,
         )
 
-    def _build_main_view(self, e=None) -> ft.Column:
-        """Vue principale (avec onglets Clients / Devis)."""
-        self.content_container = ft.Container(content=self._build_client_view())
-        header = self._build_header()
-        return ft.Column(
-            [header, self.content_container],
-            spacing=20,
-            alignment="center",
-            horizontal_alignment="center",
-            visible=False,  # sera affiché après switch_view("main")
+    def _build_main_view(self, e=None) -> ft.Stack:
+        """
+        Vue principale (avec onglets Clients / Devis).
+
+        On utilise un Stack pour positionner le header et le contenu :
+        - Le header est positionné en haut à gauche.
+        - Le conteneur principal est positionné sous le header.
+        """
+        self.content_container = ft.Container(
+            content=self._build_client_view(),
+            top=100,  # Ajustez cette valeur pour positionner le contenu sous le header
+            left=20,
         )
+        header = self._build_header()
+        return ft.Stack(
+            controls=[header, self.content_container],
+            width=1280,
+            height=720,
+            visible=False,  # Sera affiché après switch_view("main")
+        )
+
 
     # ----------------------------------------------------------------
     # Méthodes pour changer de vue ou d'onglet
